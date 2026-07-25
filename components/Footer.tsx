@@ -1,21 +1,26 @@
+"use client";
+
 import { Mail, Phone, Clock, Share2 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import VillageLogo from './VillageLogo';
 
-interface FooterProps {
-  onNavigate: (sectionId: string) => void;
-}
-
 const NAV_LINKS = [
-  { label: 'Beranda', id: 'home' },
-  { label: 'Profil Desa', id: 'about' },
-  { label: 'Berita Desa', id: 'news' },
-  { label: 'Portal UMKM', id: 'umkm' },
-  { label: 'Lembaga Desa', id: 'lembaga' },
-  { label: 'Regulasi & Perdes', id: 'regulasi' },
+  { label: 'Beranda', path: '/' },
+  { label: 'Profil Desa', path: '/tentang' },
+  { label: 'Berita Desa', path: '/berita' },
+  { label: 'Portal UMKM', path: '/umkm' },
+  { label: 'Lembaga Desa', path: '/lembaga' },
+  { label: 'Regulasi & Perdes', path: '/regulasi' },
 ];
 
-export default function Footer({ onNavigate }: FooterProps) {
+export default function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+
+  if (pathname?.startsWith('/dashboard')) {
+    return null;
+  }
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -40,9 +45,9 @@ export default function Footer({ onNavigate }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12">
           {/* Brand */}
           <div className="lg:col-span-5 space-y-6">
-            <div
+            <Link
+              href="/"
               className="flex items-center space-x-3 cursor-pointer"
-              onClick={() => { onNavigate('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             >
               <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center p-0.5">
                 <VillageLogo size={32} />
@@ -55,7 +60,7 @@ export default function Footer({ onNavigate }: FooterProps) {
                   Kabupaten Ponorogo
                 </p>
               </div>
-            </div>
+            </Link>
 
             <p className="text-xs sm:text-sm font-light text-gray-400 leading-relaxed max-w-sm">
               Portal terpadu untuk pelayanan masyarakat. Berkomitmen menghadirkan inovasi digital bagi kemajuan desa dan kesejahteraan seluruh warga.
@@ -77,13 +82,13 @@ export default function Footer({ onNavigate }: FooterProps) {
             </h5>
             <ul className="space-y-3 text-xs sm:text-sm">
               {NAV_LINKS.map((link) => (
-                <li key={link.id}>
-                  <button
-                    onClick={() => onNavigate(link.id)}
-                    className="hover:text-teal-400 transition-colors text-left cursor-pointer font-medium"
+                <li key={link.path}>
+                  <Link
+                    href={link.path}
+                    className="hover:text-teal-400 transition-colors text-left cursor-pointer font-medium block"
                   >
                     {link.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>

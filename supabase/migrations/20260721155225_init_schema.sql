@@ -1,19 +1,17 @@
--- ========================================================
--- SKEMA DATABASE WEBSITE DESA (MVP)
--- Copy semua kode ini dan paste di SQL Editor Supabase, lalu jalankan (Run).
--- ========================================================
+-- 1. ENUM ROLE USER
+CREATE TYPE user_role AS ENUM ('super_admin', 'perangkat_desa', 'pemilik_umkm');
 
--- 1. TABEL USERS (Induk Pengguna)
+-- 2. TABEL USERS (Induk Pengguna)
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   nama VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
-  role VARCHAR(50) NOT NULL, -- contoh: 'super_admin', 'perangkat_desa', 'pemilik_umkm'
+  role user_role NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. TABEL PERANGKAT_DESA (Profil tambahan untuk perangkat desa)
+-- 3. TABEL PERANGKAT_DESA (Profil tambahan untuk perangkat desa)
 CREATE TABLE perangkat_desa (
   id SERIAL PRIMARY KEY,
   user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -24,7 +22,7 @@ CREATE TABLE perangkat_desa (
   masa_jabatan VARCHAR(50)
 );
 
--- 3. TABEL BERITA
+-- 4. TABEL BERITA
 CREATE TABLE berita (
   id SERIAL PRIMARY KEY,
   judul VARCHAR(255) NOT NULL,
@@ -37,7 +35,7 @@ CREATE TABLE berita (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. TABEL UMKM
+-- 5. TABEL UMKM
 CREATE TABLE umkm (
   id SERIAL PRIMARY KEY,
   nama_usaha VARCHAR(255) NOT NULL,
@@ -49,7 +47,7 @@ CREATE TABLE umkm (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 5. TABEL LEMBAGA (PKK, Gapoktan, dll)
+-- 6. TABEL LEMBAGA (PKK, Gapoktan, dll)
 CREATE TABLE lembaga (
   id SERIAL PRIMARY KEY,
   nama_lengkap VARCHAR(255) NOT NULL,
@@ -60,7 +58,7 @@ CREATE TABLE lembaga (
   gambar VARCHAR(255)
 );
 
--- 6. TABEL PESAN (Aspirasi / Kontak Warga)
+-- 7. TABEL PESAN (Aspirasi / Kontak Warga)
 CREATE TABLE pesan (
   id SERIAL PRIMARY KEY,
   nama_pengirim VARCHAR(150) NOT NULL,

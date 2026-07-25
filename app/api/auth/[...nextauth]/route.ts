@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import sql from "@/lib/db";
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET || "super-secret-key-kkn-pulung-merdiko-2026",
   session: {
     strategy: "jwt",
   },

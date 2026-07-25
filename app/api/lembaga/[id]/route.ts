@@ -7,35 +7,33 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// Helper: cek session super_admin
-async function checkSuperAdmin() {
+async function checkAdmin() {
   const session = await getServerSession(authOptions);
   // @ts-ignore
-  if (!session || session.user?.role !== 'super_admin') {
+  const role = session?.user?.role;
+  if (!session || !['super_admin', 'perangkat_desa'].includes(role)) {
     return false;
   }
   return true;
 }
 
-// GET: Ambil satu user berdasarkan ID
+// GET: Ambil satu lembaga
 export async function GET(request: Request, context: RouteContext) {
   try {
-    const isAuthorized = await checkSuperAdmin();
-    if (!isAuthorized) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
-    }
-
     const { id } = await context.params;
-    const userId = parseInt(id);
+    const lembagaId = parseInt(id);
 
-    const users = await sql`SELECT id, nama, email, role, created_at FROM users WHERE id = ${userId}`;
-    const user = users[0];
+    const rows = await sql`
+      SELECT *
+      FROM lembaga
+      WHERE id = ${lembagaId}
+    `;
 
-    if (!user) {
-      return NextResponse.json({ success: false, message: 'User tidak ditemukan' }, { status: 404 });
+    if (rows.length === 0) {
+      return NextResponse.json({ success: false, message: 'Data tidak ditemukan' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: user }, { status: 200 });
+    return NextResponse.json({ success: true, data: rows[0] }, { status: 200 });
 
   } catch (error) {
     console.error(error);
@@ -43,37 +41,42 @@ export async function GET(request: Request, context: RouteContext) {
   }
 }
 
-// PUT: Update data user (nama, role)
+// PUT: Update lembaga
 export async function PUT(request: Request, context: RouteContext) {
   try {
-    const isAuthorized = await checkSuperAdmin();
+    const isAuthorized = await checkAdmin();
     if (!isAuthorized) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await context.params;
-    const userId = parseInt(id);
+    const lembagaId = parseInt(id);
     const body = await request.json();
 
-    if (!body.nama || !body.role) {
-      return NextResponse.json({ success: false, message: 'Data tidak lengkap (nama dan role wajib diisi)' }, { status: 400 });
+    if (!body.nama_lengkap) {
+      return NextResponse.json({ success: false, message: 'Nama lengkap wajib diisi' }, { status: 400 });
     }
 
     const result = await sql`
-      UPDATE users 
-      SET nama = ${body.nama}, role = ${body.role} 
-      WHERE id = ${userId}
-      RETURNING id, nama, email, role, created_at
+      UPDATE lembaga
+      SET nama_lengkap = ${body.nama_lengkap},
+          singkatan = ${body.singkatan || null},
+          nama_ketua = ${body.nama_ketua || null},
+          jumlah_anggota = ${body.jumlah_anggota || 0},
+          deskripsi = ${body.deskripsi || null},
+          gambar = ${body.gambar || null}
+      WHERE id = ${lembagaId}
+      RETURNING *
     `;
 
     if (result.length === 0) {
-      return NextResponse.json({ success: false, message: 'User tidak ditemukan' }, { status: 404 });
+      return NextResponse.json({ success: false, message: 'Data tidak ditemukan' }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      message: 'User berhasil diubah',
-      data: result[0]
+      message: 'Lembaga berhasil diperbarui',
+      data: result[0],
     }, { status: 200 });
 
   } catch (error) {
@@ -82,27 +85,27 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-// DELETE: Hapus user berdasarkan ID
+// DELETE: Hapus lembaga
 export async function DELETE(request: Request, context: RouteContext) {
   try {
-    const isAuthorized = await checkSuperAdmin();
+    const isAuthorized = await checkAdmin();
     if (!isAuthorized) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await context.params;
-    const userId = parseInt(id);
+    const lembagaId = parseInt(id);
 
-    const result = await sql`DELETE FROM users WHERE id = ${userId} RETURNING id, nama, email, role`;
+    const result = await sql`DELETE FROM lembaga WHERE id = ${lembagaId} RETURNING id, nama_lengkap`;
 
     if (result.length === 0) {
-      return NextResponse.json({ success: false, message: 'User tidak ditemukan' }, { status: 404 });
+      return NextResponse.json({ success: false, message: 'Data tidak ditemukan' }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      message: 'User berhasil dihapus',
-      data: result[0]
+      message: 'Lembaga berhasil dihapus',
+      data: result[0],
     }, { status: 200 });
 
   } catch (error) {
