@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 import {
     MessageSquare,
     Trash2,
@@ -9,7 +10,6 @@ import {
     Search,
     Loader2,
     AlertTriangle,
-    Check,
     ChevronLeft,
     ChevronRight,
     Mail,
@@ -17,6 +17,8 @@ import {
     Circle,
     CheckCircle2,
 } from "lucide-react";
+import Toast from "@/components/dashboard/Toast";
+import fetcher from "@/lib/swr-fetcher";
 
 /* ─────────── Types ─────────── */
 interface Pesan {
@@ -27,38 +29,6 @@ interface Pesan {
     isi_pesan: string;
     status: "belum_dibaca" | "sudah_dibaca";
     created_at: string;
-}
-
-/* ─────────── Toast ─────────── */
-function Toast({
-    message,
-    type,
-    onClose,
-}: {
-    message: string;
-    type: "success" | "error";
-    onClose: () => void;
-}) {
-    useEffect(() => {
-        const t = setTimeout(onClose, 4000);
-        return () => clearTimeout(t);
-    }, [onClose]);
-
-    return (
-        <div
-            className={`fixed top-4 right-4 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium animate-slide-in ${
-                type === "success"
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                    : "bg-red-50 text-red-800 border-red-200"
-            }`}
-        >
-            {type === "success" ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
-            {message}
-            <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100">
-                <X className="w-3.5 h-3.5" />
-            </button>
-        </div>
-    );
 }
 
 function formatTanggal(dateStr: string) {
@@ -75,16 +45,12 @@ function formatTanggal(dateStr: string) {
    Main Component
    ═══════════════════════════════════════════════════ */
 export default function PesanPage() {
-    const [items, setItems] = useState<Pesan[]>([]);
-    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<"" | "belum_dibaca" | "sudah_dibaca">("");
 
     // Pagination
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [total, setTotal] = useState(0);
     const LIMIT = 10;
 
     // Detail modal
@@ -107,36 +73,15 @@ export default function PesanPage() {
         return () => clearTimeout(timer);
     }, [search]);
 
-    /* ── Reset page on status filter change ── */
-    useEffect(() => {
-        setPage(1);
-    }, [statusFilter]);
-
     /* ── Fetch ── */
-    const fetchItems = useCallback(async () => {
-        setLoading(true);
-        try {
-            const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
-            if (debouncedSearch) params.set("search", debouncedSearch);
-            if (statusFilter) params.set("status", statusFilter);
+    const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (statusFilter) params.set("status", statusFilter);
 
-            const res = await fetch(`/api/pesan?${params}`);
-            const json = await res.json();
-            if (json.success) {
-                setItems(json.data);
-                setTotal(json.pagination.total);
-                setTotalPages(json.pagination.totalPages);
-            }
-        } catch (err) {
-            console.error("Fetch pesan error", err);
-        } finally {
-            setLoading(false);
-        }
-    }, [page, debouncedSearch, statusFilter]);
-
-    useEffect(() => {
-        fetchItems();
-    }, [fetchItems]);
+    const { data, isLoading, mutate } = useSWR(`/api/pesan?${params}`, fetcher);
+    const items: Pesan[] = data?.data ?? [];
+    const total = data?.pagination?.total ?? 0;
+    const totalPages = data?.pagination?.totalPages ?? 1;
 
     /* ── Buka detail + otomatis tandai dibaca ── */
     async function openDetail(item: Pesan) {
@@ -157,7 +102,7 @@ export default function PesanPage() {
             });
             const json = await res.json();
             if (!res.ok) throw new Error(json.message || "Gagal mengubah status");
-            setItems((prev) => prev.map((p) => (p.id === item.id ? { ...p, status } : p)));
+            mutate();
             setSelected((prev) => (prev && prev.id === item.id ? { ...prev, status } : prev));
             if (!opts?.silent) setToast({ message: "Status pesan diperbarui.", type: "success" });
         } catch (err) {
@@ -178,7 +123,7 @@ export default function PesanPage() {
             setToast({ message: "Pesan berhasil dihapus.", type: "success" });
             setDeleteTarget(null);
             setSelected(null);
-            fetchItems();
+            mutate();
         } catch (err) {
             if (err instanceof Error) setToast({ message: err.message, type: "error" });
         } finally {
@@ -230,7 +175,7 @@ export default function PesanPage() {
                         ] as const).map((opt) => (
                             <button
                                 key={opt.value}
-                                onClick={() => setStatusFilter(opt.value)}
+                                onClick={() => { setStatusFilter(opt.value); setPage(1); }}
                                 className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                                     statusFilter === opt.value
                                         ? "bg-teal-600 text-white shadow-sm"
@@ -245,7 +190,7 @@ export default function PesanPage() {
 
                 {/* Table */}
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    {loading ? (
+                    {isLoading ? (
                         <div className="flex items-center justify-center py-20 gap-2 text-gray-400 text-sm">
                             <Loader2 className="w-5 h-5 animate-spin" /> Memuat data...
                         </div>
@@ -307,7 +252,7 @@ export default function PesanPage() {
                     )}
 
                     {/* Pagination */}
-                    {!loading && items.length > 0 && (
+                    {!isLoading && items.length > 0 && (
                         <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/40 flex items-center justify-between">
                             <span className="text-xs text-gray-400">
                                 Menampilkan {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} dari {total} pesan
@@ -404,14 +349,6 @@ export default function PesanPage() {
                     </div>
                 </div>
             )}
-
-            <style jsx global>{`
-                @keyframes slide-in {
-                    from { opacity: 0; transform: translateY(-10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-slide-in { animation: slide-in 0.3s ease-out; }
-            `}</style>
         </>
     );
 }

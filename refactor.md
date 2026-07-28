@@ -100,20 +100,19 @@ Ngurangin bloat: dead code, dependency yang gak kepake, dan duplikasi — sambil
 
 ---
 
-## Fase 2: SWR + Extract Komponen Bersama Dashboard
-**Fokus:** Ganti `useEffect` fetch manual dengan SWR, sekalian tarik komponen yang copy-paste identik di 5 halaman.
+## Fase 2: SWR + Extract Komponen Bersama Dashboard — ✅ SELESAI
+**Fokus:** Ganti `useEffect` fetch manual dengan SWR, sekalian tarik komponen yang copy-paste identik.
 
-* **Modul:** `dashboard/berita`, `dashboard/umkm`, `dashboard/users`, `dashboard/lembaga`, `dashboard/perangkat` (masing-masing 500-600 baris).
-* **Ketemu saat audit:** komponen `Toast` di 5 file itu **identik 1:1** (copy-paste literal, cuma beda formatting). Pola table + modal CRUD juga sangat mirip strukturnya di kelimanya.
-* **Implementasi:**
-  1. Tarik `Toast` ke `components/dashboard/Toast.tsx` — 1 komponen, hapus 4 duplikat. Ini sendiri motong ~150+ baris tanpa risiko apa-apa.
-  2. Install `swr`. Ganti state `data`, `loading`, `page`, `useEffect` fetch dengan `useSWR(url)`.
-  3. Saat submit (POST/PUT/DELETE), panggil `mutate()` buat refresh tabel tanpa reload.
-  4. **Kalau ada waktu:** evaluasi apakah struktur table+modal juga bisa ditarik jadi 1 komponen generik (`<CrudTable>`/`<CrudModal>`) — ini berpotensi motong LOC dashboard jauh lebih banyak daripada SWR sendiri, tapi lebih berisiko karena tiap modul punya field beda-beda. Jangan dipaksakan kalau bikin komponennya malah lebih kompleks dari 5 versi terpisah.
-* **Estimasi Effort:** Menengah.
-* **Risiko Regresi:** Filter search dan pagination berhenti bekerja karena state URL tidak terhubung dengan dependency array SWR.
-* **Mitigasi (Bertahap):** Kerjakan per menu dashboard. Pastikan debounce search berfungsi normal sebelum pindah ke menu berikutnya.
-* **Kriteria Selesai:** Tidak ada `useEffect` manual untuk memuat list data, tidak ada duplikat `Toast`.
+* **Modul:** `dashboard/berita`, `dashboard/umkm`, `dashboard/users`, `dashboard/lembaga`, `dashboard/perangkat`, `dashboard/pesan` (6 file, bukan 5 — `pesan` ketambahan pas Fase 0.9 dan sengaja dibangun pake pola lama biar konsisten, jadi ikut disapu di sini juga).
+* **Dilakukan:**
+  1. `Toast` ditarik ke `components/dashboard/Toast.tsx` — 6 duplikat jadi 1. CSS keyframe `animate-slide-in` yang tadinya di-inject `<style jsx global>` di tiap file (6x) dipindah ke `app/globals.css` sekali.
+  2. `swr` diinstall (user install manual di mesinnya sendiri — `pnpm`/`npm` dua-duanya gak jalan di sandbox eksekusi ini, Node terlalu lama buat pnpm & npm crash di struktur `node_modules` pnpm). Semua `useState` (`items`/`loading`/`total`/`totalPages`) + `useCallback` fetch + `useEffect` pemicu fetch diganti `useSWR(url, fetcher)` dari `lib/swr-fetcher.ts` baru.
+  3. Submit/delete manggil `mutate()` buat refresh tabel, ganti `fetchItems()`/`fetchUsers()` manual.
+  4. Bonus: pola `useEffect(() => setPage(1), [statusFilter])` (anti-pattern React — "adjusting state on prop change") dipindah jadi reset langsung di `onChange`/`onClick` handler filter-nya. Ini juga yang bikin lint rule `react-hooks/set-state-in-effect` (10 error sebelumnya) sekarang nol di seluruh project.
+  5. Sekalian beresin `catch (err: any)` yang ketemu di lint audit → `err instanceof Error ? err.message : "..."`.
+  6. **Gak dikerjain (sesuai catatan opsional di plan):** ekstraksi `<CrudTable>`/`<CrudModal>` generik. Field tiap modul beda-beda cukup jauh, dipaksakan malah nambah kompleksitas.
+* **Hasil:** total baris 6 halaman dashboard 2725 baris (dulu berita/umkm/users/lembaga/perangkat aja udah 2898 sebelum `pesan` ditambah — jadi walau nambah 1 halaman baru, total tetap turun berkat dedup `Toast` + state simplification). `next build` sukses, `tsc --noEmit` bersih, `eslint` nol error `set-state-in-effect` di seluruh project.
+* **Kriteria Selesai:** ✅ Tidak ada `useEffect` manual untuk memuat list data, tidak ada duplikat `Toast`.
 
 ---
 
