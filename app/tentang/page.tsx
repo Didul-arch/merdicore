@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Eye, BookOpen, Landmark, Users } from 'lucide-react';
 import { getAllPerangkatDesa } from '@/lib/fetchers';
 import OfficialCard from '@/components/tentang/OfficialCard';
@@ -33,12 +34,16 @@ export default async function TentangPage() {
           <div className="lg:col-span-5 relative">
             <div className="absolute -top-4 -left-4 w-24 h-24 bg-teal-100 rounded-full blur-xl opacity-60 -z-10" />
             <div className="absolute -bottom-4 -right-4 w-44 h-44 bg-sky-100 rounded-3xl -z-10" />
-            <img
-              src="https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=800&q=80"
-              alt="Makam Bersejarah"
-              className="w-full h-80 object-cover rounded-2xl shadow-md border border-gray-150"
-              referrerPolicy="no-referrer"
-            />
+            <div className="relative w-full h-80 rounded-2xl overflow-hidden shadow-md border border-gray-150">
+              <Image
+                src="https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=800&q=80"
+                alt="Makam Bersejarah"
+                fill
+                sizes="(max-width: 1024px) 100vw, 40vw"
+                className="object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </div>
           </div>
           <div className="lg:col-span-7 space-y-5">
             <div className="flex items-center space-x-2 text-teal-700">

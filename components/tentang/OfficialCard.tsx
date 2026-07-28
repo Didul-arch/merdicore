@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { Users } from 'lucide-react';
 import type { PerangkatDesa } from '@/lib/types';
 
@@ -16,10 +17,12 @@ export default function OfficialCard({ official }: Props) {
     >
       <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-teal-100 ring-2 ring-teal-600/10">
         {official.foto ? (
-          <img
+          <Image
             src={official.foto}
             alt={official.nama_user || official.jabatan}
-            className="w-full h-full object-cover"
+            fill
+            sizes="112px"
+            className="object-cover"
             referrerPolicy="no-referrer"
           />
         ) : (

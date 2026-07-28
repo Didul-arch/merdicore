@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { ChevronRight, Eye, Calendar, BookOpen, ShoppingBag, ArrowRight } from 'lucide-react';
 import { getLatestBerita, getAllUmkm } from '@/lib/fetchers';
 import { formatDate } from '@/lib/utils';
@@ -22,11 +23,13 @@ export default async function Page() {
             <div className="lg:col-span-5 relative">
               <div className="absolute -top-6 -left-6 w-32 h-32 bg-teal-100/50 rounded-full -z-10" />
               <div className="absolute -bottom-4 -right-4 w-4/5 h-1/2 bg-slate-900 rounded-3xl -z-10" />
-              <div className="relative rounded-2xl overflow-hidden shadow-xl border border-gray-100 bg-white">
-                <img
+              <div className="relative h-[380px] rounded-2xl overflow-hidden shadow-xl border border-gray-100 bg-white">
+                <Image
                   src="https://images.unsplash.com/photo-1531538606174-0f90ff5dce83?auto=format&fit=crop&w=800&q=80"
                   alt="Warga Desa"
-                  className="w-full h-[380px] object-cover hover:scale-105 transition-transform duration-500"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  className="object-cover hover:scale-105 transition-transform duration-500"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -105,7 +108,7 @@ export default async function Page() {
                   <article className="bg-slate-50 rounded-2xl overflow-hidden border border-gray-150 hover:border-teal-500/30 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-full">
                     <div className="relative h-52 overflow-hidden bg-gray-100">
                       {item.gambar ? (
-                        <img src={item.gambar} alt={item.judul} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                        <Image src={item.gambar} alt={item.judul} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-50 to-sky-50">
                           <BookOpen className="w-12 h-12 text-teal-300" />
@@ -179,7 +182,7 @@ export default async function Page() {
                   <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-teal-500/20 hover:shadow-xl transition-all duration-300 flex flex-col h-full">
                     <div className="relative h-56 overflow-hidden bg-gray-50 flex items-center justify-center p-2">
                       {product.gambar ? (
-                        <img src={product.gambar} alt={product.nama_usaha} className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                        <Image src={product.gambar} alt={product.nama_usaha} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover rounded-xl group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                       ) : (
                         <div className="w-full h-full rounded-xl flex items-center justify-center bg-gradient-to-br from-teal-50 to-emerald-50">
                           <ShoppingBag className="w-16 h-16 text-teal-200" />

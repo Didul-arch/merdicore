@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Calendar, Eye, ArrowLeft, User, BookOpen } from 'lucide-react';
 import { getBeritaById, incrementBeritaViews } from '@/lib/fetchers';
@@ -36,7 +37,7 @@ export default async function BeritaDetailPage({ params }: Props) {
           {/* Header Image */}
           <div className="relative h-64 sm:h-96 md:h-[28rem] bg-gray-100">
             {berita.gambar ? (
-              <img src={berita.gambar} alt={berita.judul} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              <Image src={berita.gambar} alt={berita.judul} fill sizes="(max-width: 768px) 100vw, 896px" priority className="object-cover" referrerPolicy="no-referrer" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-50 to-sky-100">
                 <BookOpen className="w-24 h-24 text-teal-300" />

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Phone, Building, User, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { getUmkmById } from '@/lib/fetchers';
@@ -34,10 +35,13 @@ export default async function UmkmDetailPage({ params }: Props) {
             {/* Gambar Utama */}
             <div className="relative h-72 md:h-96 rounded-3xl overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center">
               {product.gambar ? (
-                <img
+                <Image
                   src={product.gambar}
                   alt={product.nama_usaha}
-                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                  className="object-cover hover:scale-[1.02] transition-transform duration-500"
                   referrerPolicy="no-referrer"
                 />
               ) : (
@@ -97,10 +101,12 @@ export default async function UmkmDetailPage({ params }: Props) {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {product.galeri_foto.map((foto, index) => (
                 <div key={index} className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 group">
-                  <img
+                  <Image
                     src={foto}
                     alt={`${product.nama_usaha} - Galeri ${index + 1}`}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
