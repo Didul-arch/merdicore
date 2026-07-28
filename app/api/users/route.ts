@@ -1,26 +1,13 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { requireRole } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
-
-// Fungsi helper untuk mengecek session super_admin
-async function checkSuperAdmin() {
-  const session = await getServerSession(authOptions);
-  
-  // Periksa apakah user login dan memiliki role 'super_admin'
-  // @ts-ignore
-  if (!session || session.user?.role !== 'super_admin') {
-    return false;
-  }
-  return true;
-}
 
 // 1. GET: Mengambil data users dengan pagination
 export async function GET(request: Request) {
   try {
-    const isAuthorized = await checkSuperAdmin();
-    if (!isAuthorized) {
+    const session = await requireRole(['super_admin']);
+    if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized. Hanya super_admin yang diizinkan.' }, { status: 401 });
     }
 
@@ -76,8 +63,8 @@ export async function GET(request: Request) {
 // 2. POST: Menambahkan user baru
 export async function POST(request: Request) {
   try {
-    const isAuthorized = await checkSuperAdmin();
-    if (!isAuthorized) {
+    const session = await requireRole(['super_admin']);
+    if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized. Hanya super_admin yang diizinkan menambahkan user.' }, { status: 401 });
     }
 

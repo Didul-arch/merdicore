@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { requireRole, ADMIN_ROLES } from "@/lib/auth";
 import sql from "@/lib/db";
 
 /**
@@ -8,16 +7,9 @@ import sql from "@/lib/db";
  * Only accessible to authenticated users with allowed roles.
  */
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
+  const session = await requireRole(ADMIN_ROLES);
+  if (!session) {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
-  }
-
-  // @ts-ignore - role augmentation
-  const userRole = (session.user as any).role as string;
-  const allowedRoles = ["super_admin", "perangkat_desa"];
-  if (!allowedRoles.includes(userRole)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {

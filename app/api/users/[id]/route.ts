@@ -1,27 +1,16 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { requireRole } from '@/lib/auth';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// Helper: cek session super_admin
-async function checkSuperAdmin() {
-  const session = await getServerSession(authOptions);
-  // @ts-ignore
-  if (!session || session.user?.role !== 'super_admin') {
-    return false;
-  }
-  return true;
-}
-
 // GET: Ambil satu user berdasarkan ID
 export async function GET(request: Request, context: RouteContext) {
   try {
-    const isAuthorized = await checkSuperAdmin();
-    if (!isAuthorized) {
+    const session = await requireRole(['super_admin']);
+    if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
@@ -46,8 +35,8 @@ export async function GET(request: Request, context: RouteContext) {
 // PUT: Update data user (nama, role)
 export async function PUT(request: Request, context: RouteContext) {
   try {
-    const isAuthorized = await checkSuperAdmin();
-    if (!isAuthorized) {
+    const session = await requireRole(['super_admin']);
+    if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
@@ -85,8 +74,8 @@ export async function PUT(request: Request, context: RouteContext) {
 // DELETE: Hapus user berdasarkan ID
 export async function DELETE(request: Request, context: RouteContext) {
   try {
-    const isAuthorized = await checkSuperAdmin();
-    if (!isAuthorized) {
+    const session = await requireRole(['super_admin']);
+    if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 // S3 Configuration from environment variables
@@ -39,22 +38,11 @@ const ALLOWED_TYPES = [
   'image/svg+xml',
 ];
 
-// Helper: cek session admin
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  // @ts-ignore
-  const role = session?.user?.role as string;
-  if (!session || !['super_admin', 'perangkat_desa'].includes(role)) {
-    return null;
-  }
-  return session;
-}
-
 // POST: Upload gambar ke Supabase Storage via S3 API
 export async function POST(request: Request) {
   try {
     // Auth check
-    const session = await checkAdmin();
+    const session = await requireRole(ADMIN_ROLES);
     if (!session) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized — hanya admin yang bisa upload gambar' },

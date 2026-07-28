@@ -1,24 +1,16 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  // @ts-ignore
-  const role = session?.user?.role;
-  return session && ['super_admin', 'perangkat_desa'].includes(role);
-}
-
 // GET: Ambil satu pesan (Admin Only)
 export async function GET(request: Request, context: RouteContext) {
   try {
-    const isAuthorized = await checkAdmin();
-    if (!isAuthorized) {
+    const session = await requireRole(ADMIN_ROLES);
+    if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
@@ -46,8 +38,8 @@ export async function GET(request: Request, context: RouteContext) {
 // PUT: Update status pesan (Admin Only)
 export async function PUT(request: Request, context: RouteContext) {
   try {
-    const isAuthorized = await checkAdmin();
-    if (!isAuthorized) {
+    const session = await requireRole(ADMIN_ROLES);
+    if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
@@ -85,8 +77,8 @@ export async function PUT(request: Request, context: RouteContext) {
 // DELETE: Hapus pesan (Admin Only)
 export async function DELETE(request: Request, context: RouteContext) {
   try {
-    const isAuthorized = await checkAdmin();
-    if (!isAuthorized) {
+    const session = await requireRole(ADMIN_ROLES);
+    if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
