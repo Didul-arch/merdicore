@@ -19,7 +19,7 @@ export async function getLatestBerita(limit = 10): Promise<BeritaItem[]> {
     ORDER BY b.created_at DESC
     LIMIT ${limit}
   `;
-  return rows as BeritaItem[];
+  return rows as unknown as BeritaItem[];
 }
 
 export async function getBeritaById(id: number): Promise<BeritaItem | null> {
@@ -47,7 +47,7 @@ export async function getAllUmkm(limit = 50): Promise<UmkmItem[]> {
     ORDER BY um.created_at DESC
     LIMIT ${limit}
   `;
-  return rows as UmkmItem[];
+  return rows as unknown as UmkmItem[];
 }
 
 export async function getUmkmById(id: number): Promise<UmkmItem | null> {
@@ -71,5 +71,5 @@ export async function getAllPerangkatDesa(limit = 50): Promise<PerangkatDesa[]> 
     ORDER BY pd.id ASC
     LIMIT ${limit}
   `;
-  return rows as PerangkatDesa[];
+  return rows as unknown as PerangkatDesa[];
 }
