@@ -89,16 +89,14 @@ Ngurangin bloat: dead code, dependency yang gak kepake, dan duplikasi — sambil
 
 ---
 
-## Fase 1: Server Component untuk Halaman Publik
+## Fase 1: Server Component untuk Halaman Publik — ✅ SELESAI
 **Fokus:** Konversi `"use client"` di halaman statis jadi Server Component, ekstrak interaktivitasnya ke komponen kecil.
 
 * **Modul & Pemisahan:**
-  1. **Contact (`app/contact/page.tsx`)**: Layout utama jadi SSR. Form dikeruk jadi komponen terpisah `<AspirasiForm client>`.
-  2. **Lembaga (`app/lembaga/page.tsx`)**: Layout utama jadi SSR. Filter Tabs diekstrak jadi `<LembagaTabs client>`.
-  3. **Regulasi (`app/regulasi/page.tsx`)**: Layout utama jadi SSR. Input pencarian dan modal detail dipisah ke `<RegulasiFilter client>`.
-* **Estimasi Effort:** Kecil.
-* **Risiko Regresi:** *Hydration error* jika HTML antara server dan client tidak sinkron pasca refactor.
-* **Kriteria Selesai:** Seluruh root `page.tsx` di `app/contact`, `app/lembaga`, dan `app/regulasi` murni Server Component.
+  1. **Contact (`app/contact/page.tsx`)**: Layout utama jadi SSR. Form ditarik ke `components/contact/AspirasiForm.tsx` (client). Bonus: tombol "Buka Peta" yang tadinya `<button onClick={window.open}>` diganti `<a href target="_blank">` — gak butuh JS sama sekali.
+  2. **Lembaga (`app/lembaga/page.tsx`)**: Udah kelar duluan di Fase 0.9 (sekalian pas nyambungin ke DB).
+  3. **Regulasi (`app/regulasi/page.tsx`)**: Layout utama jadi SSR. Search/filter/modal ditarik ke `components/regulasi/RegulasiFilter.tsx` (client), data hardcoded-nya dipindah ke `page.tsx` server + tipe `Regulation` baru di `lib/types.ts`.
+* **Kriteria Selesai:** ✅ `grep "use client"` di ketiga `page.tsx` nol hasil. `tsc --noEmit` dan `eslint` bersih, `next build` sukses.
 
 ---
 

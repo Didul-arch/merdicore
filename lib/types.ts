@@ -44,6 +44,19 @@ export interface LembagaItem {
   gambar: string | null;
 }
 
+// === Regulasi (statis, belum ada tabel DB) ===
+
+export interface Regulation {
+  id: string;
+  number: string;
+  year: number;
+  title: string;
+  category: 'Keuangan' | 'Ketertiban' | 'Kelembagaan' | 'Hukum';
+  status: 'Berlaku' | 'Direvisi';
+  summary: string;
+  uploadedDate: string;
+}
+
 // === Perangkat Desa ===
 
 export interface PerangkatDesa {
