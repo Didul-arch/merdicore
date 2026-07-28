@@ -1,14 +1,70 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import bcrypt from 'bcryptjs';
 
-// 1. GET: Mengambil semua data users
-export async function GET() {
+// Fungsi helper untuk mengecek session super_admin
+async function checkSuperAdmin() {
+  const session = await getServerSession(authOptions);
+  
+  // Periksa apakah user login dan memiliki role 'super_admin'
+  // @ts-ignore
+  if (!session || session.user?.role !== 'super_admin') {
+    return false;
+  }
+  return true;
+}
+
+// 1. GET: Mengambil data users dengan pagination
+export async function GET(request: Request) {
   try {
-    const users = await sql`SELECT * FROM users ORDER BY id ASC`;
-    
+    const isAuthorized = await checkSuperAdmin();
+    if (!isAuthorized) {
+      return NextResponse.json({ success: false, message: 'Unauthorized. Hanya super_admin yang diizinkan.' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+    const search = searchParams.get('search') || '';
+    const offset = (page - 1) * limit;
+
+    let users;
+    let countResult;
+
+    if (search) {
+      const searchPattern = `%${search}%`;
+      users = await sql`
+        SELECT id, nama, email, role, created_at FROM users
+        WHERE nama ILIKE ${searchPattern} OR email ILIKE ${searchPattern} OR role::text ILIKE ${searchPattern}
+        ORDER BY id ASC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+      countResult = await sql`
+        SELECT COUNT(*)::int AS total FROM users
+        WHERE nama ILIKE ${searchPattern} OR email ILIKE ${searchPattern} OR role::text ILIKE ${searchPattern}
+      `;
+    } else {
+      users = await sql`
+        SELECT id, nama, email, role, created_at FROM users
+        ORDER BY id ASC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+      countResult = await sql`SELECT COUNT(*)::int AS total FROM users`;
+    }
+
+    const total = countResult[0].total;
+
     return NextResponse.json({
       success: true,
-      data: users
+      data: users,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      }
     }, { status: 200 });
 
   } catch (error) {
@@ -20,18 +76,25 @@ export async function GET() {
 // 2. POST: Menambahkan user baru
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    
-    // Validasi sederhana
-    if (!body.nama || !body.email || !body.role) {
-      return NextResponse.json({ success: false, message: 'Data tidak lengkap' }, { status: 400 });
+    const isAuthorized = await checkSuperAdmin();
+    if (!isAuthorized) {
+      return NextResponse.json({ success: false, message: 'Unauthorized. Hanya super_admin yang diizinkan menambahkan user.' }, { status: 401 });
     }
 
-    // Insert menggunakan Raw SQL (Aman dari SQL Injection karena syntax literal `${}`)
+    const body = await request.json();
+
+    if (!body.nama || !body.email || !body.role || !body.password) {
+      return NextResponse.json({ success: false, message: 'Data tidak lengkap (nama, email, role, password wajib diisi)' }, { status: 400 });
+    }
+
+    // Enkripsi password menggunakan bcryptjs
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(body.password, salt);
+
     const result = await sql`
       INSERT INTO users (nama, email, role, password_hash) 
-      VALUES (${body.nama}, ${body.email}, ${body.role}, 'hash_sementara')
-      RETURNING *
+      VALUES (${body.nama}, ${body.email}, ${body.role}, ${passwordHash})
+      RETURNING id, nama, email, role, created_at
     `;
 
     const newUser = result[0];
@@ -42,8 +105,12 @@ export async function POST(request: Request) {
       data: newUser
     }, { status: 201 });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
+    // Tangkap error unique constraint jika email sudah ada
+    if (error.code === '23505') {
+      return NextResponse.json({ success: false, message: 'Email sudah terdaftar' }, { status: 409 });
+    }
     return NextResponse.json({ success: false, message: 'Gagal menyimpan data' }, { status: 500 });
   }
 }
