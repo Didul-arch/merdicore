@@ -64,9 +64,10 @@ export async function PUT(request: Request, context: RouteContext) {
           deskripsi = ${body.deskripsi || null},
           no_whatsapp = ${body.no_whatsapp || null},
           alamat = ${body.alamat || null},
-          gambar = ${body.gambar || null}
+          gambar = ${body.gambar || null},
+          galeri_foto = ${body.galeri_foto || []}
       WHERE id = ${umkmId}
-      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, created_at
+      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, galeri_foto, created_at
     `;
 
     if (result.length === 0) {

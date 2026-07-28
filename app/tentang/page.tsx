@@ -1,22 +1,22 @@
-"use client";
+import { Eye, BookOpen, Landmark, Users } from 'lucide-react';
+import { getAllPerangkatDesa } from '@/lib/fetchers';
+import OfficialCard from '@/components/tentang/OfficialCard';
 
-import { Eye, ShieldCheck, Heart, Award, Landmark, BookOpen, Users, Compass } from 'lucide-react';
-import { OFFICIALS } from '@/lib/data';
-import { motion } from 'motion/react';
+const MISSIONS = [
+  'Meningkatkan profesionalisme aparatur pemerintah desa demi mewujudkan pelayanan yang prima, bersih, dan berwibawa.',
+  'Membangun infrastruktur desa yang merata, berkualitas tinggi, serta berwawasan lingkungan secara berkesinambungan.',
+  'Memberdayakan ekonomi kerakyatan melalui pendampingan intensif bagi UMKM lokal, modernisasi pertanian, dan perluasan pasar digital.',
+  'Melestarikan warisan adat istiadat, kebudayaan daerah Ponorogo, serta membina kerukunan beragama secara berkeadilan.',
+];
 
-export default function TentangPage() {
-  const missions = [
-    'Meningkatkan profesionalisme aparatur pemerintah desa demi mewujudkan pelayanan yang prima, bersih, dan berwibawa.',
-    'Membangun infrastruktur desa yang merata, berkualitas tinggi, serta berwawasan lingkungan secara berkesinambungan.',
-    'Memberdayakan ekonomi kerakyatan melalui pendampingan intensif bagi UMKM lokal, modernisasi pertanian, dan perluasan pasar digital.',
-    'Melestarikan warisan adat istiadat, kebudayaan daerah Ponorogo, serta membina kerukunan beragama secara berkeadilan.'
-  ];
+export default async function TentangPage() {
+  const officials = await getAllPerangkatDesa(50);
 
   return (
     <div className="py-24 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        
-        {/* Header Title */}
+
+        {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/50">PROFIL DESA</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">
@@ -28,14 +28,14 @@ export default function TentangPage() {
           <div className="h-1 w-16 bg-teal-600 rounded mx-auto mt-2" />
         </div>
 
-        {/* Sejarah Desa Section */}
+        {/* ═══ Sejarah ═══ */}
         <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-sm border border-gray-100 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-5 relative">
             <div className="absolute -top-4 -left-4 w-24 h-24 bg-teal-100 rounded-full blur-xl opacity-60 -z-10" />
             <div className="absolute -bottom-4 -right-4 w-44 h-44 bg-sky-100 rounded-3xl -z-10" />
-            <img 
-              src="https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=800&q=80" 
-              alt="Makam Bersejarah" 
+            <img
+              src="https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=800&q=80"
+              alt="Makam Bersejarah"
               className="w-full h-80 object-cover rounded-2xl shadow-md border border-gray-150"
               referrerPolicy="no-referrer"
             />
@@ -43,12 +43,12 @@ export default function TentangPage() {
           <div className="lg:col-span-7 space-y-5">
             <div className="flex items-center space-x-2 text-teal-700">
               <BookOpen className="w-5 h-5 text-teal-600" />
-              <h3 className="font-extrabold text-gray-900 text-lg sm:text-xl">Sejarah & Asal-Usul</h3>
+              <h3 className="font-extrabold text-gray-900 text-lg sm:text-xl">Sejarah &amp; Asal-Usul</h3>
             </div>
             <div className="h-0.5 w-16 bg-teal-600 rounded" />
-            
+
             <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
-              Nama <strong>"Pulung Merdiko"</strong> memiliki akar filosofis yang mendalam. Menurut kisah turun-temurun dari para tetua desa, kata <em>"Pulung"</em> merujuk pada wahyu, keberuntungan, atau pancaran cahaya spiritual positif yang turun di wilayah ini. Sedangkan kata <em>"Merdiko"</em> berarti merdeka, bebas, dan berdaulat.
+              Nama <strong>&quot;Pulung Merdiko&quot;</strong> memiliki akar filosofis yang mendalam. Menurut kisah turun-temurun dari para tetua desa, kata <em>&quot;Pulung&quot;</em> merujuk pada wahyu, keberuntungan, atau pancaran cahaya spiritual positif yang turun di wilayah ini. Sedangkan kata <em>&quot;Merdiko&quot;</em> berarti merdeka, bebas, dan berdaulat.
             </p>
             <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
               Sejarah bermula pada pertengahan abad ke-19, saat wilayah ini berupa hutan belantara yang lebat. Sekelompok prajurit pengikut setia Pangeran Diponegoro yang mengembara ke arah timur Ponorogo membuka lahan baru. Dipimpin oleh <strong>Eyang Raden Tumenggung Djajengrana</strong>, mereka menetap dan mendirikan pemukiman yang mandiri bebas dari penjajahan Belanda.
@@ -59,7 +59,7 @@ export default function TentangPage() {
           </div>
         </div>
 
-        {/* Visi & Misi Section */}
+        {/* ═══ Visi & Misi ═══ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Visi */}
           <div className="bg-white rounded-3xl p-8 sm:p-10 shadow-sm border border-gray-100 space-y-6 flex flex-col justify-between">
@@ -71,9 +71,9 @@ export default function TentangPage() {
                 <h3 className="font-extrabold text-gray-950 text-base sm:text-lg">Visi Desa</h3>
               </div>
               <div className="h-0.5 w-12 bg-teal-600 rounded" />
-              
+
               <blockquote className="border-l-4 border-teal-600 pl-4 py-2 text-sm sm:text-base italic text-gray-800 font-medium leading-relaxed bg-slate-50 rounded-r-xl pr-4">
-                "Mewujudkan Desa Pulung Merdiko sebagai desa yang mandiri, sejahtera, rukun, dan berbudaya melalui tata kelola pemerintahan yang bersih, transparan, dan responsif berbasis teknologi informasi."
+                &quot;Mewujudkan Desa Pulung Merdiko sebagai desa yang mandiri, sejahtera, rukun, dan berbudaya melalui tata kelola pemerintahan yang bersih, transparan, dan responsif berbasis teknologi informasi.&quot;
               </blockquote>
             </div>
 
@@ -104,7 +104,7 @@ export default function TentangPage() {
             <div className="h-0.5 w-12 bg-teal-600 rounded" />
 
             <ul className="space-y-4">
-              {missions.map((mission, idx) => (
+              {MISSIONS.map((mission, idx) => (
                 <li key={idx} className="flex items-start space-x-3">
                   <span className="w-6 h-6 flex-shrink-0 bg-teal-50 text-teal-700 border border-teal-200/50 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
                     {idx + 1}
@@ -116,7 +116,7 @@ export default function TentangPage() {
           </div>
         </div>
 
-        {/* Perangkat Desa Section */}
+        {/* ═══ Perangkat Desa ═══ */}
         <div className="space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <div className="flex justify-center">
@@ -131,41 +131,19 @@ export default function TentangPage() {
             <div className="h-1 w-12 bg-teal-600 rounded mx-auto" />
           </div>
 
-          {/* Officials Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {OFFICIALS.map((official, idx) => (
-              <motion.div
-                key={idx}
-                whileHover={{ y: -6 }}
-                className="bg-white rounded-2xl overflow-hidden border border-gray-150 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center p-6 space-y-4"
-              >
-                {/* Official Photo with frame */}
-                <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-teal-100 ring-2 ring-teal-600/10">
-                  <img 
-                    src={official.photo} 
-                    alt={official.name} 
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-
-                {/* Name & Role */}
-                <div className="space-y-1">
-                  <h4 className="font-bold text-gray-900 text-sm sm:text-base leading-tight">
-                    {official.name}
-                  </h4>
-                  <p className="text-xs text-teal-600 font-semibold uppercase tracking-wider">
-                    {official.role}
-                  </p>
-                </div>
-
-                {/* Info and contact details placeholder */}
-                <div className="w-full pt-3 border-t border-gray-50 text-[11px] text-gray-400 font-light">
-                  <span>Sedia melayani kebutuhan administratif warga desa.</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {officials.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {officials.map((official) => (
+                <OfficialCard key={official.id} official={official} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200">
+              <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-base font-semibold text-gray-700">Belum Ada Data Perangkat Desa</p>
+              <p className="text-xs text-gray-500 mt-1">Silakan tambahkan data melalui dashboard admin.</p>
+            </div>
+          )}
         </div>
 
       </div>

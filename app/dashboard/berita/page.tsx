@@ -105,6 +105,7 @@ export default function BeritaManagementPage() {
 
     // Form
     const [fJudul, setFJudul] = useState("");
+    const [fFile, setFFile] = useState<File | null>(null);
     const [fSlug, setFSlug] = useState("");
     const [fKonten, setFKonten] = useState("");
     const [fGambar, setFGambar] = useState("");
@@ -165,6 +166,7 @@ export default function BeritaManagementPage() {
         setFSlug("");
         setFKonten("");
         setFGambar("");
+        setFFile(null);
         setFStatus("draft");
         setModalOpen(true);
     }
@@ -176,6 +178,7 @@ export default function BeritaManagementPage() {
         setFSlug(item.slug);
         setFKonten(item.konten || "");
         setFGambar(item.gambar || "");
+        setFFile(null);
         setFStatus(item.status);
         setModalOpen(true);
     }
@@ -185,12 +188,23 @@ export default function BeritaManagementPage() {
         e.preventDefault();
         setSubmitting(true);
         try {
+            let imageUrl = fGambar;
+            if (fFile) {
+                const formData = new FormData();
+                formData.append('file', fFile);
+                formData.append('folder', 'berita');
+                const upRes = await fetch('/api/upload', { method: 'POST', body: formData });
+                const upJson = await upRes.json();
+                if (!upRes.ok) throw new Error(upJson.message || 'Gagal upload gambar');
+                imageUrl = upJson.data.url;
+            }
+
             const slug = fSlug || toSlug(fJudul);
             if (formMode === "create") {
                 const res = await fetch("/api/berita", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ judul: fJudul, slug, konten: fKonten, gambar: fGambar || null, status: fStatus }),
+                    body: JSON.stringify({ judul: fJudul, slug, konten: fKonten, gambar: imageUrl || null, status: fStatus }),
                 });
                 const json = await res.json();
                 if (!res.ok) throw new Error(json.message || "Gagal menambahkan berita");
@@ -199,7 +213,7 @@ export default function BeritaManagementPage() {
                 const res = await fetch(`/api/berita/${editingItem.id}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ judul: fJudul, slug, konten: fKonten, gambar: fGambar || null, status: fStatus }),
+                    body: JSON.stringify({ judul: fJudul, slug, konten: fKonten, gambar: imageUrl || null, status: fStatus }),
                 });
                 const json = await res.json();
                 if (!res.ok) throw new Error(json.message || "Gagal mengubah berita");
@@ -423,14 +437,18 @@ export default function BeritaManagementPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">URL Gambar (opsional)</label>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Gambar (Upload file)</label>
                                 <input
-                                    type="text"
-                                    value={fGambar}
-                                    onChange={(e) => setFGambar(e.target.value)}
-                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 transition"
-                                    placeholder="https://contoh.com/gambar.jpg"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setFFile(e.target.files?.[0] || null)}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 transition file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer"
                                 />
+                                {fGambar && !fFile && (
+                                    <div className="mt-3 relative w-full h-40 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                                        <img src={fGambar} alt="Preview" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
                             </div>
 
                             <div>

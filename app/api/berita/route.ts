@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     if (search && status) {
       const searchPattern = `%${search}%`;
       berita = await sql`
-        SELECT b.id, b.judul, b.slug, b.gambar, b.status, b.created_at, b.updated_at,
+        SELECT b.id, b.judul, b.slug, b.gambar, b.status, b.views, b.created_at, b.updated_at,
                u.nama AS penulis_nama
         FROM berita b
         LEFT JOIN users u ON b.penulis_id = u.id
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
     } else if (search) {
       const searchPattern = `%${search}%`;
       berita = await sql`
-        SELECT b.id, b.judul, b.slug, b.gambar, b.status, b.created_at, b.updated_at,
+        SELECT b.id, b.judul, b.slug, b.gambar, b.status, b.views, b.created_at, b.updated_at,
                u.nama AS penulis_nama
         FROM berita b
         LEFT JOIN users u ON b.penulis_id = u.id
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
       `;
     } else if (status) {
       berita = await sql`
-        SELECT b.id, b.judul, b.slug, b.gambar, b.status, b.created_at, b.updated_at,
+        SELECT b.id, b.judul, b.slug, b.gambar, b.status, b.views, b.created_at, b.updated_at,
                u.nama AS penulis_nama
         FROM berita b
         LEFT JOIN users u ON b.penulis_id = u.id
@@ -79,7 +79,7 @@ export async function GET(request: Request) {
       `;
     } else {
       berita = await sql`
-        SELECT b.id, b.judul, b.slug, b.gambar, b.status, b.created_at, b.updated_at,
+        SELECT b.id, b.judul, b.slug, b.gambar, b.status, b.views, b.created_at, b.updated_at,
                u.nama AS penulis_nama
         FROM berita b
         LEFT JOIN users u ON b.penulis_id = u.id

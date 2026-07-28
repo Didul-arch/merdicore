@@ -10,6 +10,8 @@
     "migrate": "node --env-file=.env.local scripts/migrate.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1095.0",
+    "@supabase/supabase-js": "^2.110.8",
     "bcryptjs": "^3.0.3",
     "lucide-react": "^1.25.0",
     "motion": "^12.42.2",

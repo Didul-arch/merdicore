@@ -25,6 +25,7 @@ interface Umkm {
     no_whatsapp: string | null;
     alamat: string | null;
     gambar: string | null;
+    galeri_foto: string[] | null;
     pemilik_nama: string | null;
     created_at: string;
 }
@@ -86,10 +87,15 @@ export default function UmkmManagementPage() {
 
     // Form
     const [fNamaUsaha, setFNamaUsaha] = useState("");
+    const [fFile, setFFile] = useState<File | null>(null);
     const [fDeskripsi, setFDeskripsi] = useState("");
     const [fNoWa, setFNoWa] = useState("");
     const [fAlamat, setFAlamat] = useState("");
     const [fGambar, setFGambar] = useState("");
+    
+    // Gallery
+    const [fGaleriFiles, setFGaleriFiles] = useState<File[]>([]);
+    const [fGaleriFoto, setFGaleriFoto] = useState<string[]>([]);
 
     // Delete
     const [deleteTarget, setDeleteTarget] = useState<Umkm | null>(null);
@@ -141,6 +147,9 @@ export default function UmkmManagementPage() {
         setFNoWa("");
         setFAlamat("");
         setFGambar("");
+        setFFile(null);
+        setFGaleriFoto([]);
+        setFGaleriFiles([]);
         setModalOpen(true);
     }
 
@@ -152,6 +161,9 @@ export default function UmkmManagementPage() {
         setFNoWa(item.no_whatsapp || "");
         setFAlamat(item.alamat || "");
         setFGambar(item.gambar || "");
+        setFGaleriFoto(item.galeri_foto || []);
+        setFGaleriFiles([]);
+        setFFile(null);
         setModalOpen(true);
     }
 
@@ -160,12 +172,40 @@ export default function UmkmManagementPage() {
         e.preventDefault();
         setSubmitting(true);
         try {
+            let imageUrl = fGambar;
+            if (fFile) {
+                const formData = new FormData();
+                formData.append('file', fFile);
+                formData.append('folder', 'umkm');
+                const upRes = await fetch('/api/upload', { method: 'POST', body: formData });
+                const upJson = await upRes.json();
+                if (!upRes.ok) throw new Error(upJson.message || 'Gagal upload gambar utama');
+                imageUrl = upJson.data.url;
+            }
+
+            // Upload gallery photos concurrently
+            let galleryUrls = [...fGaleriFoto];
+            if (fGaleriFiles.length > 0) {
+                const uploadPromises = fGaleriFiles.map(async (file) => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('folder', 'umkm/galeri');
+                    const upRes = await fetch('/api/upload', { method: 'POST', body: formData });
+                    const upJson = await upRes.json();
+                    if (!upRes.ok) throw new Error(upJson.message || `Gagal upload gambar galeri: ${file.name}`);
+                    return upJson.data.url;
+                });
+                const newGalleryUrls = await Promise.all(uploadPromises);
+                galleryUrls = [...galleryUrls, ...newGalleryUrls];
+            }
+
             const payload = {
                 nama_usaha: fNamaUsaha,
                 deskripsi: fDeskripsi || null,
                 no_whatsapp: fNoWa || null,
                 alamat: fAlamat || null,
-                gambar: fGambar || null,
+                gambar: imageUrl || null,
+                galeri_foto: galleryUrls,
             };
 
             if (formMode === "create") {
@@ -412,14 +452,49 @@ export default function UmkmManagementPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">URL Gambar (opsional)</label>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Gambar Produk Utama (Upload file)</label>
                                 <input
-                                    type="text"
-                                    value={fGambar}
-                                    onChange={(e) => setFGambar(e.target.value)}
-                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 transition"
-                                    placeholder="https://contoh.com/gambar.jpg"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setFFile(e.target.files?.[0] || null)}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 transition file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer"
                                 />
+                                {fGambar && !fFile && (
+                                    <div className="mt-3 relative w-full h-40 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                                        <img src={fGambar} alt="Preview" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Galeri Produk Tambahan (Bisa pilih banyak)</label>
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        if (e.target.files) {
+                                            setFGaleriFiles(Array.from(e.target.files));
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 transition file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer"
+                                />
+                                {fGaleriFoto.length > 0 && (
+                                    <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
+                                        {fGaleriFoto.map((url, idx) => (
+                                            <div key={idx} className="relative w-20 h-20 shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 group">
+                                                <img src={url} alt={`Galeri ${idx + 1}`} className="w-full h-full object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFGaleriFoto(prev => prev.filter((_, i) => i !== idx))}
+                                                    className="absolute top-1 right-1 bg-white/90 rounded-full p-0.5 text-red-600 opacity-0 group-hover:opacity-100 transition shadow-sm cursor-pointer hover:bg-red-50"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex justify-end gap-2 pt-2">

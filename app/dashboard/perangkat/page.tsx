@@ -87,6 +87,7 @@ export default function PerangkatDesaPage() {
 
     // Form
     const [fJabatan, setFJabatan] = useState("");
+    const [fFile, setFFile] = useState<File | null>(null);
     const [fNip, setFNip] = useState("");
     const [fPendidikan, setFPendidikan] = useState("");
     const [fFoto, setFFoto] = useState("");
@@ -141,6 +142,7 @@ export default function PerangkatDesaPage() {
         setFNip("");
         setFPendidikan("");
         setFFoto("");
+        setFFile(null);
         setFMasaJabatan("");
         setModalOpen(true);
     }
@@ -152,6 +154,7 @@ export default function PerangkatDesaPage() {
         setFNip(item.nip || "");
         setFPendidikan(item.pendidikan_terakhir || "");
         setFFoto(item.foto || "");
+        setFFile(null);
         setFMasaJabatan(item.masa_jabatan || "");
         setModalOpen(true);
     }
@@ -161,11 +164,22 @@ export default function PerangkatDesaPage() {
         e.preventDefault();
         setSubmitting(true);
         try {
+            let imageUrl = fFoto;
+            if (fFile) {
+                const formData = new FormData();
+                formData.append('file', fFile);
+                formData.append('folder', 'avatar');
+                const upRes = await fetch('/api/upload', { method: 'POST', body: formData });
+                const upJson = await upRes.json();
+                if (!upRes.ok) throw new Error(upJson.message || 'Gagal upload foto');
+                imageUrl = upJson.data.url;
+            }
+
             const payload = {
                 jabatan: fJabatan,
                 nip: fNip || null,
                 pendidikan_terakhir: fPendidikan || null,
-                foto: fFoto || null,
+                foto: imageUrl || null,
                 masa_jabatan: fMasaJabatan || null,
             };
 
@@ -430,14 +444,18 @@ export default function PerangkatDesaPage() {
 
                             {/* Foto URL */}
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">URL Foto (opsional)</label>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Foto Profil (Upload file)</label>
                                 <input
-                                    type="text"
-                                    value={fFoto}
-                                    onChange={(e) => setFFoto(e.target.value)}
-                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 transition"
-                                    placeholder="https://contoh.com/foto.jpg"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setFFile(e.target.files?.[0] || null)}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 transition file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                                 />
+                                {fFoto && !fFile && (
+                                    <div className="mt-3 relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-50">
+                                        <img src={fFoto} alt="Preview" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
                             </div>
 
                             {/* Buttons */}
