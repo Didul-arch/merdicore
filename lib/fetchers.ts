@@ -5,7 +5,7 @@
    ═══════════════════════════════════════════════════ */
 
 import sql from '@/lib/db';
-import type { BeritaItem, UmkmItem, PerangkatDesa } from '@/lib/types';
+import type { BeritaItem, UmkmItem, LembagaItem, PerangkatDesa } from '@/lib/types';
 
 // ─── Berita ─────────────────────────────────────────
 
@@ -58,6 +58,18 @@ export async function getUmkmById(id: number): Promise<UmkmItem | null> {
     WHERE um.id = ${id}
   `;
   return (rows[0] as UmkmItem) ?? null;
+}
+
+// ─── Lembaga ────────────────────────────────────────
+
+export async function getAllLembaga(limit = 50): Promise<LembagaItem[]> {
+  const rows = await sql`
+    SELECT id, nama_lengkap, singkatan, nama_ketua, jumlah_anggota, deskripsi, gambar
+    FROM lembaga
+    ORDER BY id ASC
+    LIMIT ${limit}
+  `;
+  return rows as unknown as LembagaItem[];
 }
 
 // ─── Perangkat Desa ─────────────────────────────────

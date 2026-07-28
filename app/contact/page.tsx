@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from 'react';
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle, HelpCircle, Heart } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle, HelpCircle } from 'lucide-react';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -11,18 +11,38 @@ export default function ContactPage() {
     message: ''
   });
   const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.message) {
       alert('Mohon isi kolom nama dan pesan aspirasi Anda!');
       return;
     }
-    setSuccess(true);
-    setTimeout(() => {
-      setSuccess(false);
-      setFormData({ name: '', email: '', subject: 'Saran', message: '' });
-    }, 3000);
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/pesan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nama_pengirim: formData.name,
+          email: formData.email || null,
+          isi_pesan: `[${formData.subject}] ${formData.message}`,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        setFormData({ name: '', email: '', subject: 'Saran', message: '' });
+      }, 3000);
+    } catch {
+      setError('Gagal mengirim aspirasi. Silakan coba lagi beberapa saat.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -137,8 +157,11 @@ export default function ContactPage() {
                   <HelpCircle className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
                   <span>Pemdes Pulung Merdiko menjamin kerahasiaan identitas pelapor untuk pengaduan tertentu. Kami mengapresiasi keikutsertaan Anda demi kelangsungan pembangunan Ponorogo.</span>
                 </div>
-                <button type="submit" className="w-full bg-[#0f172a] hover:bg-[#1e293b] text-white text-xs sm:text-sm font-bold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 cursor-pointer">
-                  <Send className="w-4 h-4" /><span>Kirim Aspirasi Saya</span>
+                {error && (
+                  <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{error}</p>
+                )}
+                <button type="submit" disabled={submitting} className="w-full bg-[#0f172a] hover:bg-[#1e293b] disabled:opacity-60 text-white text-xs sm:text-sm font-bold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 cursor-pointer">
+                  <Send className="w-4 h-4" /><span>{submitting ? 'Mengirim...' : 'Kirim Aspirasi Saya'}</span>
                 </button>
               </form>
             )}
