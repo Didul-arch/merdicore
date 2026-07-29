@@ -11,12 +11,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     }
     const userRole = session.user.role;
     const allowedRoles = ["super_admin", "perangkat_desa"];
-    if (!allowedRoles.includes(userRole)) {
+    if (!userRole || !allowedRoles.includes(userRole)) {
         redirect("/");
     }
     return (
         <div className="flex min-h-screen bg-gray-50">
-            <DashboardSidebar userName={session.user.name} userRole={session.user.role} />
+            <DashboardSidebar userName={session.user.name ?? undefined} userRole={userRole} />
             <div className="flex-1 pt-14 md:pt-0">
                 {children}
             </div>

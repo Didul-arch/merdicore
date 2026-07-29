@@ -32,6 +32,31 @@ export interface UmkmItem {
   created_at: string;
 }
 
+// === Lembaga ===
+
+export interface LembagaItem {
+  id: number;
+  nama_lengkap: string;
+  singkatan: string | null;
+  nama_ketua: string | null;
+  jumlah_anggota: number;
+  deskripsi: string | null;
+  gambar: string | null;
+}
+
+// === Regulasi (statis, belum ada tabel DB) ===
+
+export interface Regulation {
+  id: string;
+  number: string;
+  year: number;
+  title: string;
+  category: 'Keuangan' | 'Ketertiban' | 'Kelembagaan' | 'Hukum';
+  status: 'Berlaku' | 'Direvisi';
+  summary: string;
+  uploadedDate: string;
+}
+
 // === Perangkat Desa ===
 
 export interface PerangkatDesa {

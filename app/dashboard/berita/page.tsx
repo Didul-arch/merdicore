@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 import {
     FileText,
     Plus,
@@ -10,12 +11,13 @@ import {
     Search,
     Loader2,
     AlertTriangle,
-    Check,
     ChevronLeft,
     ChevronRight,
     Eye,
     EyeOff,
 } from "lucide-react";
+import Toast from "@/components/dashboard/Toast";
+import fetcher from "@/lib/swr-fetcher";
 
 /* ─────────── Types ─────────── */
 interface Berita {
@@ -49,52 +51,16 @@ function toSlug(text: string) {
         .trim();
 }
 
-/* ─────────── Toast ─────────── */
-function Toast({
-    message,
-    type,
-    onClose,
-}: {
-    message: string;
-    type: "success" | "error";
-    onClose: () => void;
-}) {
-    useEffect(() => {
-        const t = setTimeout(onClose, 4000);
-        return () => clearTimeout(t);
-    }, [onClose]);
-
-    return (
-        <div
-            className={`fixed top-4 right-4 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium animate-slide-in ${
-                type === "success"
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                    : "bg-red-50 text-red-800 border-red-200"
-            }`}
-        >
-            {type === "success" ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
-            {message}
-            <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100">
-                <X className="w-3.5 h-3.5" />
-            </button>
-        </div>
-    );
-}
-
 /* ═══════════════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════════════ */
 export default function BeritaManagementPage() {
-    const [items, setItems] = useState<Berita[]>([]);
-    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
 
     // Pagination
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [total, setTotal] = useState(0);
     const LIMIT = 10;
 
     // Modal
@@ -127,36 +93,15 @@ export default function BeritaManagementPage() {
         return () => clearTimeout(timer);
     }, [search]);
 
-    /* ── Reset page on status filter change ── */
-    useEffect(() => {
-        setPage(1);
-    }, [statusFilter]);
-
     /* ── Fetch ── */
-    const fetchItems = useCallback(async () => {
-        setLoading(true);
-        try {
-            const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
-            if (debouncedSearch) params.set("search", debouncedSearch);
-            if (statusFilter) params.set("status", statusFilter);
+    const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (statusFilter) params.set("status", statusFilter);
 
-            const res = await fetch(`/api/berita?${params}`);
-            const json = await res.json();
-            if (json.success) {
-                setItems(json.data);
-                setTotal(json.pagination.total);
-                setTotalPages(json.pagination.totalPages);
-            }
-        } catch (err) {
-            console.error("Fetch berita error", err);
-        } finally {
-            setLoading(false);
-        }
-    }, [page, debouncedSearch, statusFilter]);
-
-    useEffect(() => {
-        fetchItems();
-    }, [fetchItems]);
+    const { data, isLoading, mutate } = useSWR(`/api/berita?${params}`, fetcher);
+    const items: Berita[] = data?.data ?? [];
+    const total = data?.pagination?.total ?? 0;
+    const totalPages = data?.pagination?.totalPages ?? 1;
 
     /* ── Modal openers ── */
     function openCreate() {
@@ -220,9 +165,9 @@ export default function BeritaManagementPage() {
                 setToast({ message: "Berita berhasil diperbarui!", type: "success" });
             }
             setModalOpen(false);
-            fetchItems();
-        } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            mutate();
+        } catch (err) {
+            setToast({ message: err instanceof Error ? err.message : "Terjadi kesalahan", type: "error" });
         } finally {
             setSubmitting(false);
         }
@@ -238,9 +183,9 @@ export default function BeritaManagementPage() {
             if (!res.ok) throw new Error(json.message || "Gagal menghapus berita");
             setToast({ message: "Berita berhasil dihapus.", type: "success" });
             setDeleteTarget(null);
-            fetchItems();
-        } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            mutate();
+        } catch (err) {
+            setToast({ message: err instanceof Error ? err.message : "Terjadi kesalahan", type: "error" });
         } finally {
             setDeleting(false);
         }
@@ -291,7 +236,7 @@ export default function BeritaManagementPage() {
                     </div>
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                         className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 transition cursor-pointer"
                     >
                         <option value="">Semua Status</option>
@@ -302,7 +247,7 @@ export default function BeritaManagementPage() {
 
                 {/* Table */}
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    {loading ? (
+                    {isLoading ? (
                         <div className="flex items-center justify-center py-20 gap-2 text-gray-400 text-sm">
                             <Loader2 className="w-5 h-5 animate-spin" /> Memuat data...
                         </div>
@@ -361,7 +306,7 @@ export default function BeritaManagementPage() {
                     )}
 
                     {/* Pagination */}
-                    {!loading && items.length > 0 && (
+                    {!isLoading && items.length > 0 && (
                         <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/40 flex items-center justify-between">
                             <span className="text-xs text-gray-400">
                                 Menampilkan {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} dari {total} berita
@@ -504,14 +449,6 @@ export default function BeritaManagementPage() {
                     </div>
                 </div>
             )}
-
-            <style jsx global>{`
-                @keyframes slide-in {
-                    from { opacity: 0; transform: translateY(-10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-slide-in { animation: slide-in 0.3s ease-out; }
-            `}</style>
         </>
     );
 }

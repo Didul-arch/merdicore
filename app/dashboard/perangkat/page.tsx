@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 import {
     Landmark,
     Plus,
@@ -10,12 +11,13 @@ import {
     Search,
     Loader2,
     AlertTriangle,
-    Check,
     ChevronLeft,
     ChevronRight,
     GraduationCap,
     BadgeCheck,
 } from "lucide-react";
+import Toast from "@/components/dashboard/Toast";
+import fetcher from "@/lib/swr-fetcher";
 
 /* ─────────── Types ─────────── */
 interface Perangkat {
@@ -32,51 +34,15 @@ interface Perangkat {
 
 type FormMode = "create" | "edit";
 
-/* ─────────── Toast ─────────── */
-function Toast({
-    message,
-    type,
-    onClose,
-}: {
-    message: string;
-    type: "success" | "error";
-    onClose: () => void;
-}) {
-    useEffect(() => {
-        const t = setTimeout(onClose, 4000);
-        return () => clearTimeout(t);
-    }, [onClose]);
-
-    return (
-        <div
-            className={`fixed top-4 right-4 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium animate-slide-in ${
-                type === "success"
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                    : "bg-red-50 text-red-800 border-red-200"
-            }`}
-        >
-            {type === "success" ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
-            {message}
-            <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100">
-                <X className="w-3.5 h-3.5" />
-            </button>
-        </div>
-    );
-}
-
 /* ═══════════════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════════════ */
 export default function PerangkatDesaPage() {
-    const [items, setItems] = useState<Perangkat[]>([]);
-    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
 
     // Pagination
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [total, setTotal] = useState(0);
     const LIMIT = 10;
 
     // Modal
@@ -110,29 +76,13 @@ export default function PerangkatDesaPage() {
     }, [search]);
 
     /* ── Fetch ── */
-    const fetchItems = useCallback(async () => {
-        setLoading(true);
-        try {
-            const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
-            if (debouncedSearch) params.set("search", debouncedSearch);
+    const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
+    if (debouncedSearch) params.set("search", debouncedSearch);
 
-            const res = await fetch(`/api/perangkat-desa?${params}`);
-            const json = await res.json();
-            if (json.success) {
-                setItems(json.data);
-                setTotal(json.pagination.total);
-                setTotalPages(json.pagination.totalPages);
-            }
-        } catch (err) {
-            console.error("Fetch perangkat desa error", err);
-        } finally {
-            setLoading(false);
-        }
-    }, [page, debouncedSearch]);
-
-    useEffect(() => {
-        fetchItems();
-    }, [fetchItems]);
+    const { data, isLoading, mutate } = useSWR(`/api/perangkat-desa?${params}`, fetcher);
+    const items: Perangkat[] = data?.data ?? [];
+    const total = data?.pagination?.total ?? 0;
+    const totalPages = data?.pagination?.totalPages ?? 1;
 
     /* ── Modal openers ── */
     function openCreate() {
@@ -203,9 +153,9 @@ export default function PerangkatDesaPage() {
                 setToast({ message: "Data berhasil diperbarui!", type: "success" });
             }
             setModalOpen(false);
-            fetchItems();
-        } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            mutate();
+        } catch (err) {
+            setToast({ message: err instanceof Error ? err.message : "Terjadi kesalahan", type: "error" });
         } finally {
             setSubmitting(false);
         }
@@ -221,9 +171,9 @@ export default function PerangkatDesaPage() {
             if (!res.ok) throw new Error(json.message || "Gagal menghapus data");
             setToast({ message: "Data berhasil dihapus.", type: "success" });
             setDeleteTarget(null);
-            fetchItems();
-        } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            mutate();
+        } catch (err) {
+            setToast({ message: err instanceof Error ? err.message : "Terjadi kesalahan", type: "error" });
         } finally {
             setDeleting(false);
         }
@@ -274,7 +224,7 @@ export default function PerangkatDesaPage() {
 
                 {/* Table */}
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    {loading ? (
+                    {isLoading ? (
                         <div className="flex items-center justify-center py-20 gap-2 text-gray-400 text-sm">
                             <Loader2 className="w-5 h-5 animate-spin" /> Memuat data...
                         </div>
@@ -350,7 +300,7 @@ export default function PerangkatDesaPage() {
                     )}
 
                     {/* Pagination */}
-                    {!loading && items.length > 0 && (
+                    {!isLoading && items.length > 0 && (
                         <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/40 flex items-center justify-between">
                             <span className="text-xs text-gray-400">
                                 Menampilkan {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} dari {total} perangkat
@@ -501,13 +451,6 @@ export default function PerangkatDesaPage() {
                 </div>
             )}
 
-            <style jsx global>{`
-                @keyframes slide-in {
-                    from { opacity: 0; transform: translateY(-10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-slide-in { animation: slide-in 0.3s ease-out; }
-            `}</style>
         </>
     );
 }

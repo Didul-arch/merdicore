@@ -3,13 +3,24 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import sql from "@/lib/db";
 
+// Sengaja TANPA nilai cadangan. Kunci ini yang dipakai nandatangani token
+// sesi login — kalau ditulis di kode, siapa pun yang baca repo bisa bikin
+// token palsu dan masuk sebagai admin. Lebih baik aplikasinya berhenti dengan
+// pesan jelas daripada jalan tapi bolong.
+const secret = process.env.NEXTAUTH_SECRET;
+if (!secret) {
+  throw new Error(
+    "NEXTAUTH_SECRET belum diisi."
+  );
+}
+
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET || "super-secret-key-kkn-pulung-merdiko-2026",
+  secret,
   session: {
     strategy: "jwt",
   },
   pages: {
-    signIn: "/login", // Arahkan ke halaman login custom kita
+    signIn: "/login", // Arahkan ke halaman login custom
   },
   providers: [
     CredentialsProvider({
@@ -51,18 +62,14 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // @ts-ignore
         token.role = user.role;
-        // @ts-ignore
         token.id = user.id;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        // @ts-ignore
         session.user.role = token.role;
-        // @ts-ignore
         session.user.id = token.id;
       }
       return session;

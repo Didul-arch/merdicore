@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import sharp from 'sharp';
 
 // S3 Configuration from environment variables
 const endpoint = process.env.PUBLIC_BUCKET_ENDPOINT || '';
@@ -39,22 +39,17 @@ const ALLOWED_TYPES = [
   'image/svg+xml',
 ];
 
-// Helper: cek session admin
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  // @ts-ignore
-  const role = session?.user?.role as string;
-  if (!session || !['super_admin', 'perangkat_desa'].includes(role)) {
-    return null;
-  }
-  return session;
-}
+// Lebar maksimum gambar yang disimpan. Foto HP mentah bisa 4000px / 2.5MB,
+// padahal area tampil terlebar di situs ini cuma ~800px. 1600px udah cukup
+// buat layar retina (2x) dan bikin ukurannya turun drastis.
+const MAX_WIDTH = 1600;
+const WEBP_QUALITY = 80;
 
 // POST: Upload gambar ke Supabase Storage via S3 API
 export async function POST(request: Request) {
   try {
     // Auth check
-    const session = await checkAdmin();
+    const session = await requireRole(ADMIN_ROLES);
     if (!session) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized — hanya admin yang bisa upload gambar' },
@@ -96,22 +91,41 @@ export async function POST(request: Request) {
       );
     }
 
+    const original = Buffer.from(await file.arrayBuffer());
+
+    // SVG itu vektor — kalau dikompres sharp malah jadi gambar biasa dan pecah
+    // waktu di-zoom. Jadi dilewati, diupload apa adanya (ukurannya juga kecil).
+    const isSvg = file.type === 'image/svg+xml';
+
+    let body: Buffer<ArrayBufferLike> = original;
+    let contentType = file.type;
+    let ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+
+    if (!isSvg) {
+      body = await sharp(original)
+        // .rotate() tanpa argumen = benerin orientasi sesuai EXIF. Wajib, kalau
+        // nggak foto dari HP bisa kebalik/miring pas ditampilkan.
+        .rotate()
+        .resize({ width: MAX_WIDTH, withoutEnlargement: true })
+        .webp({ quality: WEBP_QUALITY })
+        .toBuffer();
+      contentType = 'image/webp';
+      ext = 'webp';
+      // Catatan: sharp buang metadata (EXIF) secara default — bonus privasi,
+      // karena foto HP sering nyimpen titik koordinat GPS lokasi pemotretan.
+    }
+
     // Generate unique filename
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8);
     const fileName = `${folder}/${timestamp}-${randomStr}.${ext}`;
-
-    // Convert File to Buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
 
     // Upload to Supabase Storage via S3 API
     const command = new PutObjectCommand({
       Bucket: BUCKET,
       Key: fileName,
-      Body: buffer,
-      ContentType: file.type,
+      Body: body,
+      ContentType: contentType,
     });
 
     await s3Client.send(command);
@@ -131,10 +145,10 @@ export async function POST(request: Request) {
       },
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('S3 Upload error:', error);
     return NextResponse.json(
-      { success: false, message: `Gagal mengupload gambar: ${error.message || 'Unknown error'}` },
+      { success: false, message: `Gagal mengupload gambar: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }

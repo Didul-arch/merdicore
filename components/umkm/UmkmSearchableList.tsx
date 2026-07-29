@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Eye, ShoppingBag, Search, Phone, Building } from 'lucide-react';
 import type { UmkmItem } from '@/lib/types';
 import { generateWhatsAppUrl } from '@/lib/utils';
@@ -55,10 +56,12 @@ export default function UmkmSearchableList({ initialData }: Props) {
               <div className="bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-teal-500/20 hover:shadow-xl transition-all duration-300 flex flex-col h-full">
                 <div className="relative h-60 overflow-hidden bg-gray-50 flex items-center justify-center p-2">
                   {product.gambar ? (
-                    <img
+                    <Image
                       src={product.gambar}
                       alt={product.nama_usaha}
-                      className="w-full h-full object-cover rounded-2xl group-hover:scale-[1.03] transition-transform duration-500"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover rounded-2xl group-hover:scale-[1.03] transition-transform duration-500"
                       referrerPolicy="no-referrer"
                     />
                   ) : (

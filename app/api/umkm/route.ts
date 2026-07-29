@@ -1,27 +1,14 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-
-// Helper: cek session admin
-async function checkAdmin() {
-  const session = await getServerSession(authOptions);
-  // @ts-ignore
-  const role = session?.user?.role;
-  if (!session || !['super_admin', 'perangkat_desa'].includes(role)) {
-    return null;
-  }
-  return session;
-}
+import { requireRole, ADMIN_ROLES } from '@/lib/auth';
+import { parsePagination } from '@/lib/pagination';
 
 // GET: Ambil UMKM dengan pagination
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+    const { page, limit, offset } = parsePagination(searchParams);
     const search = searchParams.get('search') || '';
-    const offset = (page - 1) * limit;
 
     let umkm;
     let countResult;
@@ -71,7 +58,7 @@ export async function GET(request: Request) {
 // POST: Tambah UMKM baru (harus admin)
 export async function POST(request: Request) {
   try {
-    const session = await checkAdmin();
+    const session = await requireRole(ADMIN_ROLES);
     if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }

@@ -5,7 +5,7 @@
    ═══════════════════════════════════════════════════ */
 
 import sql from '@/lib/db';
-import type { BeritaItem, UmkmItem, PerangkatDesa } from '@/lib/types';
+import type { BeritaItem, UmkmItem, LembagaItem, PerangkatDesa } from '@/lib/types';
 
 // ─── Berita ─────────────────────────────────────────
 
@@ -19,7 +19,7 @@ export async function getLatestBerita(limit = 10): Promise<BeritaItem[]> {
     ORDER BY b.created_at DESC
     LIMIT ${limit}
   `;
-  return rows as BeritaItem[];
+  return rows as unknown as BeritaItem[];
 }
 
 export async function getBeritaById(id: number): Promise<BeritaItem | null> {
@@ -47,7 +47,7 @@ export async function getAllUmkm(limit = 50): Promise<UmkmItem[]> {
     ORDER BY um.created_at DESC
     LIMIT ${limit}
   `;
-  return rows as UmkmItem[];
+  return rows as unknown as UmkmItem[];
 }
 
 export async function getUmkmById(id: number): Promise<UmkmItem | null> {
@@ -58,6 +58,18 @@ export async function getUmkmById(id: number): Promise<UmkmItem | null> {
     WHERE um.id = ${id}
   `;
   return (rows[0] as UmkmItem) ?? null;
+}
+
+// ─── Lembaga ────────────────────────────────────────
+
+export async function getAllLembaga(limit = 50): Promise<LembagaItem[]> {
+  const rows = await sql`
+    SELECT id, nama_lengkap, singkatan, nama_ketua, jumlah_anggota, deskripsi, gambar
+    FROM lembaga
+    ORDER BY id ASC
+    LIMIT ${limit}
+  `;
+  return rows as unknown as LembagaItem[];
 }
 
 // ─── Perangkat Desa ─────────────────────────────────
@@ -71,5 +83,5 @@ export async function getAllPerangkatDesa(limit = 50): Promise<PerangkatDesa[]> 
     ORDER BY pd.id ASC
     LIMIT ${limit}
   `;
-  return rows as PerangkatDesa[];
+  return rows as unknown as PerangkatDesa[];
 }

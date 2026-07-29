@@ -1,34 +1,20 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { requireRole } from '@/lib/auth';
+import { parsePagination } from '@/lib/pagination';
 import bcrypt from 'bcryptjs';
-
-// Fungsi helper untuk mengecek session super_admin
-async function checkSuperAdmin() {
-  const session = await getServerSession(authOptions);
-  
-  // Periksa apakah user login dan memiliki role 'super_admin'
-  // @ts-ignore
-  if (!session || session.user?.role !== 'super_admin') {
-    return false;
-  }
-  return true;
-}
 
 // 1. GET: Mengambil data users dengan pagination
 export async function GET(request: Request) {
   try {
-    const isAuthorized = await checkSuperAdmin();
-    if (!isAuthorized) {
+    const session = await requireRole(['super_admin']);
+    if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized. Hanya super_admin yang diizinkan.' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+    const { page, limit, offset } = parsePagination(searchParams);
     const search = searchParams.get('search') || '';
-    const offset = (page - 1) * limit;
 
     let users;
     let countResult;
@@ -76,8 +62,8 @@ export async function GET(request: Request) {
 // 2. POST: Menambahkan user baru
 export async function POST(request: Request) {
   try {
-    const isAuthorized = await checkSuperAdmin();
-    if (!isAuthorized) {
+    const session = await requireRole(['super_admin']);
+    if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized. Hanya super_admin yang diizinkan menambahkan user.' }, { status: 401 });
     }
 
@@ -105,10 +91,10 @@ export async function POST(request: Request) {
       data: newUser
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
     // Tangkap error unique constraint jika email sudah ada
-    if (error.code === '23505') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
       return NextResponse.json({ success: false, message: 'Email sudah terdaftar' }, { status: 409 });
     }
     return NextResponse.json({ success: false, message: 'Gagal menyimpan data' }, { status: 500 });

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Calendar, Eye, BookOpen, Search } from 'lucide-react';
 import type { BeritaItem } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
@@ -46,7 +47,7 @@ export default function BeritaSearchableList({ initialData }: Props) {
               <article className="bg-white rounded-2xl overflow-hidden border border-gray-150 hover:border-teal-500/30 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-full">
                 <div className="relative h-56 overflow-hidden bg-gray-100">
                   {item.gambar ? (
-                    <img src={item.gambar} alt={item.judul} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                    <Image src={item.gambar} alt={item.judul} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-50 to-sky-50">
                       <BookOpen className="w-12 h-12 text-teal-300" />
