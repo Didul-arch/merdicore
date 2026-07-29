@@ -95,7 +95,16 @@ export default function ZoomableImage({
           )}
 
           <div className="relative w-full h-full max-w-5xl max-h-[85vh] m-4" onClick={(e) => e.stopPropagation()}>
-            <Image src={fotos[aktif]} alt={`${alt} — foto ${aktif + 1}`} fill sizes="100vw" className="object-contain" referrerPolicy="no-referrer" />
+            {/* Wadahnya dibatasi max-w-5xl (1024px), jadi sizes harus ikut segitu.
+                Kalau ditulis 100vw, browser ngunduh gambar lebih besar dari perlu. */}
+            <Image
+              src={fotos[aktif]}
+              alt={`${alt} — foto ${aktif + 1}`}
+              fill
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="object-contain"
+              referrerPolicy="no-referrer"
+            />
           </div>
 
           {fotos.length > 1 && (
