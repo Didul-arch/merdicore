@@ -12,7 +12,6 @@ import {
   Menu,
   X,
   ChevronRight,
-  Landmark,
   Users2,
   MessageSquare,
 } from "lucide-react";
@@ -39,22 +38,15 @@ export default function DashboardSidebar({ userName, userRole, className }: Side
       color: "text-sky-600 bg-sky-50",
     },
     {
+      // Halaman ini gabungan: kelola akun + tentukan siapa perangkat desa
+      // beserta jabatannya. Menu "Perangkat Desa" yang lama dilebur ke sini.
       label: "Manajemen User",
-      desc: "Kelola akun pengguna",
+      desc: "Akun & jabatan perangkat desa",
       path: "/dashboard/users",
       icon: Users,
       exact: false,
       roles: ["super_admin"],
       color: "text-violet-600 bg-violet-50",
-    },
-    {
-      label: "Perangkat Desa",
-      desc: "Struktur pemerintahan",
-      path: "/dashboard/perangkat",
-      icon: Landmark,
-      exact: false,
-      roles: ["super_admin", "perangkat_desa"],
-      color: "text-indigo-600 bg-indigo-50",
     },
     {
       label: "Lembaga Desa",

@@ -6,7 +6,7 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// PUT: Update data user (nama, role)
+// PUT: Update data user (nama, role, no_hp)
 export async function PUT(request: Request, context: RouteContext) {
   try {
     const session = await requireRole(['super_admin']);
@@ -18,15 +18,20 @@ export async function PUT(request: Request, context: RouteContext) {
     const userId = parseInt(id);
     const body = await request.json();
 
-    if (!body.nama || !body.role) {
-      return NextResponse.json({ success: false, message: 'Data tidak lengkap (nama dan role wajib diisi)' }, { status: 400 });
+    const noHp = typeof body.no_hp === 'string' ? body.no_hp.trim() : '';
+
+    if (!body.nama || !body.role || !noHp) {
+      return NextResponse.json({ success: false, message: 'Data tidak lengkap (nama, no. HP, dan role wajib diisi)' }, { status: 400 });
+    }
+    if (noHp.length > 20) {
+      return NextResponse.json({ success: false, message: 'Nomor HP maksimal 20 karakter' }, { status: 400 });
     }
 
     const result = await sql`
-      UPDATE users 
-      SET nama = ${body.nama}, role = ${body.role} 
+      UPDATE users
+      SET nama = ${body.nama}, role = ${body.role}, no_hp = ${noHp}
       WHERE id = ${userId}
-      RETURNING id, nama, email, role, created_at
+      RETURNING id, nama, email, role, no_hp, created_at
     `;
 
     if (result.length === 0) {

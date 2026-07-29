@@ -65,13 +65,18 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    if (!body.jabatan) {
-      return NextResponse.json({ success: false, message: 'Jabatan wajib diisi' }, { status: 400 });
+    // user_id itu NOT NULL di database. Sebelumnya di sini dikirim
+    // `body.user_id || null` padahal form gak punya pilihan user sama sekali,
+    // jadi INSERT-nya SELALU gagal dan tabel perangkat_desa gak pernah keisi.
+    const userId = Number(body.user_id);
+
+    if (!body.jabatan || !Number.isInteger(userId) || userId <= 0) {
+      return NextResponse.json({ success: false, message: 'User dan jabatan wajib dipilih' }, { status: 400 });
     }
 
     const result = await sql`
       INSERT INTO perangkat_desa (user_id, jabatan, nip, pendidikan_terakhir, foto, masa_jabatan)
-      VALUES (${body.user_id || null}, ${body.jabatan}, ${body.nip || null}, ${body.pendidikan_terakhir || null}, ${body.foto || null}, ${body.masa_jabatan || null})
+      VALUES (${userId}, ${body.jabatan}, ${body.nip || null}, ${body.pendidikan_terakhir || null}, ${body.foto || null}, ${body.masa_jabatan || null})
       RETURNING id, user_id, jabatan, nip, pendidikan_terakhir, foto, masa_jabatan
     `;
 
