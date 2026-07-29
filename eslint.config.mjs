@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // scripts/ isinya skrip Node biasa (CommonJS), bukan bagian aplikasi
+    // Next.js. Aturan seperti larangan require() gak relevan di sana.
+    "scripts/**",
   ]),
 ]);
 

@@ -19,22 +19,37 @@ export async function GET(request: Request) {
     let users;
     let countResult;
 
+    // LEFT JOIN ke perangkat_desa: satu halaman ini sekarang nampilin akun
+    // sekaligus jabatannya (kalau dia diangkat jadi perangkat desa).
+    // pd_id dipakai frontend buat tau ini nambah jabatan baru (PUT) atau ubah
+    // yang sudah ada (POST) di /api/perangkat-desa.
     if (search) {
       const searchPattern = `%${search}%`;
       users = await sql`
-        SELECT id, nama, email, role, created_at FROM users
-        WHERE nama ILIKE ${searchPattern} OR email ILIKE ${searchPattern} OR role::text ILIKE ${searchPattern}
-        ORDER BY id ASC
+        SELECT u.id, u.nama, u.email, u.role, u.no_hp, u.created_at,
+               pd.id AS pd_id, pd.jabatan, pd.nip, pd.pendidikan_terakhir,
+               pd.foto, pd.masa_jabatan
+        FROM users u
+        LEFT JOIN perangkat_desa pd ON pd.user_id = u.id
+        WHERE u.nama ILIKE ${searchPattern} OR u.email ILIKE ${searchPattern}
+           OR u.role::text ILIKE ${searchPattern} OR pd.jabatan ILIKE ${searchPattern}
+        ORDER BY u.id ASC
         LIMIT ${limit} OFFSET ${offset}
       `;
       countResult = await sql`
-        SELECT COUNT(*)::int AS total FROM users
-        WHERE nama ILIKE ${searchPattern} OR email ILIKE ${searchPattern} OR role::text ILIKE ${searchPattern}
+        SELECT COUNT(*)::int AS total FROM users u
+        LEFT JOIN perangkat_desa pd ON pd.user_id = u.id
+        WHERE u.nama ILIKE ${searchPattern} OR u.email ILIKE ${searchPattern}
+           OR u.role::text ILIKE ${searchPattern} OR pd.jabatan ILIKE ${searchPattern}
       `;
     } else {
       users = await sql`
-        SELECT id, nama, email, role, created_at FROM users
-        ORDER BY id ASC
+        SELECT u.id, u.nama, u.email, u.role, u.no_hp, u.created_at,
+               pd.id AS pd_id, pd.jabatan, pd.nip, pd.pendidikan_terakhir,
+               pd.foto, pd.masa_jabatan
+        FROM users u
+        LEFT JOIN perangkat_desa pd ON pd.user_id = u.id
+        ORDER BY u.id ASC
         LIMIT ${limit} OFFSET ${offset}
       `;
       countResult = await sql`SELECT COUNT(*)::int AS total FROM users`;
@@ -69,8 +84,15 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    if (!body.nama || !body.email || !body.role || !body.password) {
-      return NextResponse.json({ success: false, message: 'Data tidak lengkap (nama, email, role, password wajib diisi)' }, { status: 400 });
+    // no_hp wajib buat user BARU. Di database kolomnya nullable supaya user
+    // lama (yang dibuat sebelum kolom ini ada) tetap valid.
+    const noHp = typeof body.no_hp === 'string' ? body.no_hp.trim() : '';
+
+    if (!body.nama || !body.email || !body.role || !body.password || !noHp) {
+      return NextResponse.json({ success: false, message: 'Data tidak lengkap (nama, email, no. HP, role, password wajib diisi)' }, { status: 400 });
+    }
+    if (noHp.length > 20) {
+      return NextResponse.json({ success: false, message: 'Nomor HP maksimal 20 karakter' }, { status: 400 });
     }
 
     // Enkripsi password menggunakan bcryptjs
@@ -78,9 +100,9 @@ export async function POST(request: Request) {
     const passwordHash = await bcrypt.hash(body.password, salt);
 
     const result = await sql`
-      INSERT INTO users (nama, email, role, password_hash) 
-      VALUES (${body.nama}, ${body.email}, ${body.role}, ${passwordHash})
-      RETURNING id, nama, email, role, created_at
+      INSERT INTO users (nama, email, role, password_hash, no_hp)
+      VALUES (${body.nama}, ${body.email}, ${body.role}, ${passwordHash}, ${noHp})
+      RETURNING id, nama, email, role, no_hp, created_at
     `;
 
     const newUser = result[0];
