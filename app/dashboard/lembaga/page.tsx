@@ -18,7 +18,6 @@ import {
 import Toast from "@/components/dashboard/Toast";
 import fetcher from "@/lib/swr-fetcher";
 
-/* ─────────── Types ─────────── */
 interface Lembaga {
     id: number;
     nama_lengkap: string;
@@ -31,24 +30,18 @@ interface Lembaga {
 
 type FormMode = "create" | "edit";
 
-/* ═══════════════════════════════════════════════════
-   Main Component
-   ═══════════════════════════════════════════════════ */
 export default function LembagaDesaPage() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
 
-    // Pagination
     const [page, setPage] = useState(1);
     const LIMIT = 10;
 
-    // Modal
     const [modalOpen, setModalOpen] = useState(false);
     const [formMode, setFormMode] = useState<FormMode>("create");
     const [editingItem, setEditingItem] = useState<Lembaga | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
-    // Form
     const [fNamaLengkap, setFNamaLengkap] = useState("");
     const [fSingkatan, setFSingkatan] = useState("");
     const [fNamaKetua, setFNamaKetua] = useState("");
@@ -56,14 +49,11 @@ export default function LembagaDesaPage() {
     const [fDeskripsi, setFDeskripsi] = useState("");
     const [fGambar, setFGambar] = useState("");
 
-    // Delete
     const [deleteTarget, setDeleteTarget] = useState<Lembaga | null>(null);
     const [deleting, setDeleting] = useState(false);
 
-    // Toast
     const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-    /* ── Debounce ── */
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(search);
@@ -72,7 +62,6 @@ export default function LembagaDesaPage() {
         return () => clearTimeout(timer);
     }, [search]);
 
-    /* ── Fetch ── */
     const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
     if (debouncedSearch) params.set("search", debouncedSearch);
 
@@ -81,7 +70,6 @@ export default function LembagaDesaPage() {
     const total = data?.pagination?.total ?? 0;
     const totalPages = data?.pagination?.totalPages ?? 1;
 
-    /* ── Modal openers ── */
     function openCreate() {
         setFormMode("create");
         setEditingItem(null);
@@ -106,7 +94,6 @@ export default function LembagaDesaPage() {
         setModalOpen(true);
     }
 
-    /* ── Submit ── */
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setSubmitting(true);
@@ -148,7 +135,6 @@ export default function LembagaDesaPage() {
         }
     }
 
-    /* ── Delete ── */
     async function handleDelete() {
         if (!deleteTarget) return;
         setDeleting(true);
@@ -166,15 +152,11 @@ export default function LembagaDesaPage() {
         }
     }
 
-    /* ═══════════════════════════════════════
-       Render
-       ═══════════════════════════════════════ */
     return (
         <>
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
             <main className="p-6 md:p-10 space-y-6">
-                {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -197,7 +179,6 @@ export default function LembagaDesaPage() {
                     </button>
                 </div>
 
-                {/* Search */}
                 <div className="relative max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
@@ -209,7 +190,6 @@ export default function LembagaDesaPage() {
                     />
                 </div>
 
-                {/* Table */}
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-20 gap-2 text-gray-400 text-sm">
@@ -285,7 +265,6 @@ export default function LembagaDesaPage() {
                         </div>
                     )}
 
-                    {/* Pagination */}
                     {!isLoading && items.length > 0 && (
                         <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/40 flex items-center justify-between">
                             <span className="text-xs text-gray-400">
@@ -305,7 +284,6 @@ export default function LembagaDesaPage() {
                 </div>
             </main>
 
-            {/* ═══ Create / Edit Modal ═══ */}
             {modalOpen && (
                 <div className="fixed inset-0 z-[80] flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => !submitting && setModalOpen(false)} />
@@ -396,7 +374,6 @@ export default function LembagaDesaPage() {
                                 />
                             </div>
 
-                            {/* Buttons */}
                             <div className="flex justify-end gap-2 pt-2">
                                 <button type="button" onClick={() => setModalOpen(false)} disabled={submitting} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition cursor-pointer">
                                     Batal
@@ -411,7 +388,6 @@ export default function LembagaDesaPage() {
                 </div>
             )}
 
-            {/* ═══ Delete Confirmation ═══ */}
             {deleteTarget && (
                 <div className="fixed inset-0 z-[80] flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => !deleting && setDeleteTarget(null)} />

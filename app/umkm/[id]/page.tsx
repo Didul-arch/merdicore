@@ -49,7 +49,6 @@ export default async function UmkmDetailPage({ params }: Props) {
               )}
             </div>
 
-            {/* Info */}
             <div className="space-y-6 flex flex-col justify-center">
               <div>
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-950 mb-2 leading-tight">

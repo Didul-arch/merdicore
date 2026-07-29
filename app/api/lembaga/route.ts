@@ -3,7 +3,6 @@ import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 import { parsePagination } from '@/lib/pagination';
 
-// GET: Ambil daftar lembaga dengan pagination
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -54,7 +53,6 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: Tambah lembaga (harus admin)
 export async function POST(request: Request) {
   try {
     const session = await requireRole(ADMIN_ROLES);

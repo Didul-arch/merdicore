@@ -20,7 +20,6 @@ import Toast from "@/components/dashboard/Toast";
 import fetcher from "@/lib/swr-fetcher";
 import { uploadImage } from "@/lib/upload-image";
 
-/* ─────────── Types ─────────── */
 interface Berita {
     id: number;
     judul: string;
@@ -35,14 +34,12 @@ interface Berita {
 
 type FormMode = "create" | "edit";
 
-/* ─────────── Status badge ─────────── */
 function statusBadge(status: string) {
     return status === "published"
         ? "bg-emerald-50 text-emerald-700 border-emerald-200/50"
         : "bg-amber-50 text-amber-700 border-amber-200/50";
 }
 
-/* ─────────── Slug generator ─────────── */
 function toSlug(text: string) {
     return text
         .toLowerCase()
@@ -52,25 +49,19 @@ function toSlug(text: string) {
         .trim();
 }
 
-/* ═══════════════════════════════════════════════════
-   Main Component
-   ═══════════════════════════════════════════════════ */
 export default function BeritaManagementPage() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
 
-    // Pagination
     const [page, setPage] = useState(1);
     const LIMIT = 10;
 
-    // Modal
     const [modalOpen, setModalOpen] = useState(false);
     const [formMode, setFormMode] = useState<FormMode>("create");
     const [editingItem, setEditingItem] = useState<Berita | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
-    // Form
     const [fJudul, setFJudul] = useState("");
     const [fFile, setFFile] = useState<File | null>(null);
     const [fSlug, setFSlug] = useState("");
@@ -78,14 +69,11 @@ export default function BeritaManagementPage() {
     const [fGambar, setFGambar] = useState("");
     const [fStatus, setFStatus] = useState("draft");
 
-    // Delete
     const [deleteTarget, setDeleteTarget] = useState<Berita | null>(null);
     const [deleting, setDeleting] = useState(false);
 
-    // Toast
     const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-    /* ── Debounce search ── */
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(search);
@@ -94,7 +82,6 @@ export default function BeritaManagementPage() {
         return () => clearTimeout(timer);
     }, [search]);
 
-    /* ── Fetch ── */
     const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
     if (debouncedSearch) params.set("search", debouncedSearch);
     if (statusFilter) params.set("status", statusFilter);
@@ -104,7 +91,6 @@ export default function BeritaManagementPage() {
     const total = data?.pagination?.total ?? 0;
     const totalPages = data?.pagination?.totalPages ?? 1;
 
-    /* ── Modal openers ── */
     function openCreate() {
         setFormMode("create");
         setEditingItem(null);
@@ -129,7 +115,6 @@ export default function BeritaManagementPage() {
         setModalOpen(true);
     }
 
-    /* ── Submit ── */
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setSubmitting(true);
@@ -168,7 +153,6 @@ export default function BeritaManagementPage() {
         }
     }
 
-    /* ── Delete ── */
     async function handleDelete() {
         if (!deleteTarget) return;
         setDeleting(true);
@@ -186,15 +170,11 @@ export default function BeritaManagementPage() {
         }
     }
 
-    /* ═══════════════════════════════════════
-       Render
-       ═══════════════════════════════════════ */
     return (
         <>
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
             <main className="p-6 md:p-10 space-y-6">
-                {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -217,7 +197,6 @@ export default function BeritaManagementPage() {
                     </button>
                 </div>
 
-                {/* Search + Filter */}
                 <div className="flex flex-col sm:flex-row gap-3">
                     <div className="relative flex-1 max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -240,7 +219,6 @@ export default function BeritaManagementPage() {
                     </select>
                 </div>
 
-                {/* Table */}
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-20 gap-2 text-gray-400 text-sm">
@@ -300,7 +278,6 @@ export default function BeritaManagementPage() {
                         </div>
                     )}
 
-                    {/* Pagination */}
                     {!isLoading && items.length > 0 && (
                         <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/40 flex items-center justify-between">
                             <span className="text-xs text-gray-400">
@@ -320,7 +297,6 @@ export default function BeritaManagementPage() {
                 </div>
             </main>
 
-            {/* ═══ Create / Edit Modal ═══ */}
             {modalOpen && (
                 <div className="fixed inset-0 z-[80] flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => !submitting && setModalOpen(false)} />
@@ -417,7 +393,6 @@ export default function BeritaManagementPage() {
                 </div>
             )}
 
-            {/* ═══ Delete Confirmation ═══ */}
             {deleteTarget && (
                 <div className="fixed inset-0 z-[80] flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => !deleting && setDeleteTarget(null)} />

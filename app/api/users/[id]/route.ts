@@ -6,7 +6,6 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// PUT: Update data user (nama, role, no_hp)
 export async function PUT(request: Request, context: RouteContext) {
   try {
     const session = await requireRole(['super_admin']);
@@ -50,7 +49,6 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-// DELETE: Hapus user berdasarkan ID
 export async function DELETE(request: Request, context: RouteContext) {
   try {
     const session = await requireRole(['super_admin']);

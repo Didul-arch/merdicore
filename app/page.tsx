@@ -19,7 +19,6 @@ export default async function Page() {
       {/* Hero — Client Component (animasi motion) */}
       <HeroAnimated />
 
-      {/* ═══ Profil Singkat ═══ */}
       <section className="py-16 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -80,7 +79,6 @@ export default async function Page() {
         </div>
       </section>
 
-      {/* ═══ Berita Terkini ═══ */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 space-y-4 sm:space-y-0">
@@ -154,7 +152,6 @@ export default async function Page() {
         </div>
       </section>
 
-      {/* ═══ UMKM Unggulan ═══ */}
       <section className="py-20 bg-slate-50 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 space-y-4 sm:space-y-0">
@@ -223,7 +220,6 @@ export default async function Page() {
         </div>
       </section>
 
-      {/* ═══ Banner Kontak ═══ */}
       <section className="py-12 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-slate-900 rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8">

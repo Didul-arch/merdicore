@@ -1,8 +1,3 @@
-/* ═══════════════════════════════════════════════════
-   Shared Utilities
-   Fungsi helper yang dipakai di banyak halaman.
-   ═══════════════════════════════════════════════════ */
-
 /** Format tanggal ke format Indonesia. Contoh: "28 Juli 2026" */
 export function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('id-ID', {

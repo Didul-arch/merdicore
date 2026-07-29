@@ -3,7 +3,6 @@ import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 import { parsePagination } from '@/lib/pagination';
 
-// GET: Ambil daftar pesan dengan pagination (Admin Only)
 export async function GET(request: Request) {
   try {
     const session = await requireRole(ADMIN_ROLES);
@@ -55,7 +54,6 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: Kirim pesan baru (Public)
 export async function POST(request: Request) {
   try {
     const body = await request.json();

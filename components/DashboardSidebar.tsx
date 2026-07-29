@@ -89,10 +89,8 @@ export default function DashboardSidebar({ userName, userRole, className }: Side
   const isActive = (item: (typeof navItems)[0]) =>
     item.exact ? pathname === item.path : pathname.startsWith(item.path);
 
-  /* ── Shared sidebar content ── */
   const sidebarContent = (
     <>
-      {/* Brand */}
       <div className="px-5 pt-6 pb-2">
         <div className="flex items-center space-x-3">
           <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-md">
@@ -108,12 +106,10 @@ export default function DashboardSidebar({ userName, userRole, className }: Side
       {/* Divider */}
       <div className="mx-5 my-3 border-t border-gray-200" />
 
-      {/* Section label */}
       <p className="px-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
         Menu Utama
       </p>
 
-      {/* Navigation */}
       <nav className="px-3 space-y-0.5">
         {navItems
           .filter((item) => item.roles.includes(userRole ?? ""))
@@ -133,7 +129,6 @@ export default function DashboardSidebar({ userName, userRole, className }: Side
                     : "text-gray-600 hover:bg-gray-100"}
                 `}
               >
-                {/* Icon badge */}
                 <span
                   className={`
                     w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200
@@ -162,14 +157,12 @@ export default function DashboardSidebar({ userName, userRole, className }: Side
           })}
       </nav>
 
-      {/* Spacer */}
       <div className="flex-1" />
 
       {/* User card + Logout */}
       <div className="px-3 pb-4">
         <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
           <div className="flex items-center space-x-3">
-            {/* Avatar */}
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
               {userName ? userName[0].toUpperCase() : "A"}
             </div>

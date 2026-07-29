@@ -21,7 +21,6 @@ import Toast from "@/components/dashboard/Toast";
 import fetcher from "@/lib/swr-fetcher";
 import { uploadImage } from "@/lib/upload-image";
 
-/* ─────────── Types ─────────── */
 interface User {
     id: number;
     nama: string;
@@ -57,11 +56,6 @@ function roleBadge(role: string) {
     return map[role] ?? "bg-slate-100 text-slate-700 border-slate-200/50";
 }
 
-/* ═══════════════════════════════════════════════════
-   Manajemen User
-   Satu halaman buat kelola akun sekaligus nentuin siapa yang
-   jadi perangkat desa dan jabatannya apa.
-   ═══════════════════════════════════════════════════ */
 export default function UsersManagementPage() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -97,7 +91,6 @@ export default function UsersManagementPage() {
 
     const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-    /* ── Debounce ── */
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(search);
@@ -114,7 +107,6 @@ export default function UsersManagementPage() {
     const total = data?.pagination?.total ?? 0;
     const totalPages = data?.pagination?.totalPages ?? 1;
 
-    /* ── Modal akun ── */
     function openCreate() {
         setFormMode("create");
         setEditingUser(null);
@@ -175,7 +167,6 @@ export default function UsersManagementPage() {
         }
     }
 
-    /* ── Modal jabatan ── */
     function openJabatan(user: User) {
         setJabatanTarget(user);
         setJJabatan(user.jabatan ?? "");
@@ -231,7 +222,6 @@ export default function UsersManagementPage() {
         }
     }
 
-    /* ── Copot jabatan (akunnya tetap ada) ── */
     async function handleCopot() {
         if (!copotTarget?.pd_id) return;
         setCopoting(true);
@@ -249,7 +239,6 @@ export default function UsersManagementPage() {
         }
     }
 
-    /* ── Hapus akun ── */
     async function handleDelete() {
         if (!deleteTarget) return;
         setDeleting(true);
@@ -267,13 +256,11 @@ export default function UsersManagementPage() {
         }
     }
 
-    /* ═══════════════════════════════════════ */
     return (
         <>
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
             <main className="p-6 md:p-10 space-y-6">
-                {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -299,7 +286,6 @@ export default function UsersManagementPage() {
                     </button>
                 </div>
 
-                {/* Search */}
                 <div className="relative max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
@@ -311,7 +297,6 @@ export default function UsersManagementPage() {
                     />
                 </div>
 
-                {/* Tabel */}
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-20 gap-2 text-gray-400 text-sm">
@@ -419,7 +404,6 @@ export default function UsersManagementPage() {
                         </div>
                     )}
 
-                    {/* Pagination */}
                     {!isLoading && users.length > 0 && (
                         <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/40 flex items-center justify-between">
                             <span className="text-xs text-gray-400">
@@ -439,7 +423,6 @@ export default function UsersManagementPage() {
                 </div>
             </main>
 
-            {/* ═══ Modal Tambah / Edit Akun ═══ */}
             {modalOpen && (
                 <div className="fixed inset-0 z-[80] flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => !submitting && setModalOpen(false)} />
@@ -544,7 +527,6 @@ export default function UsersManagementPage() {
                 </div>
             )}
 
-            {/* ═══ Modal Jabatan Perangkat Desa ═══ */}
             {jabatanTarget && (
                 <div className="fixed inset-0 z-[80] flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => !savingJabatan && setJabatanTarget(null)} />
@@ -642,7 +624,6 @@ export default function UsersManagementPage() {
                 </div>
             )}
 
-            {/* ═══ Konfirmasi Copot Jabatan ═══ */}
             {copotTarget && (
                 <div className="fixed inset-0 z-[90] flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => !copoting && setCopotTarget(null)} />
@@ -671,7 +652,6 @@ export default function UsersManagementPage() {
                 </div>
             )}
 
-            {/* ═══ Konfirmasi Hapus Akun ═══ */}
             {deleteTarget && (
                 <div className="fixed inset-0 z-[90] flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => !deleting && setDeleteTarget(null)} />

@@ -1,13 +1,8 @@
-/* ═══════════════════════════════════════════════════
-   Server-Side Data Fetchers
-   Query database langsung dari Server Components.
-   JANGAN import file ini di Client Components.
-   ═══════════════════════════════════════════════════ */
-
+// Query database langsung dari Server Component — tanpa lewat API route.
+// JANGAN import file ini di Client Component: kodenya bakal ikut terkirim
+// ke browser bareng kredensial database.
 import sql from '@/lib/db';
 import type { BeritaItem, UmkmItem, LembagaItem, PerangkatDesa } from '@/lib/types';
-
-// ─── Berita ─────────────────────────────────────────
 
 export async function getLatestBerita(limit = 10): Promise<BeritaItem[]> {
   const rows = await sql`
@@ -36,8 +31,6 @@ export async function incrementBeritaViews(id: number): Promise<void> {
   await sql`UPDATE berita SET views = views + 1 WHERE id = ${id}`;
 }
 
-// ─── UMKM ───────────────────────────────────────────
-
 export async function getAllUmkm(limit = 50): Promise<UmkmItem[]> {
   const rows = await sql`
     SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat,
@@ -60,8 +53,6 @@ export async function getUmkmById(id: number): Promise<UmkmItem | null> {
   return (rows[0] as UmkmItem) ?? null;
 }
 
-// ─── Lembaga ────────────────────────────────────────
-
 export async function getAllLembaga(limit = 50): Promise<LembagaItem[]> {
   const rows = await sql`
     SELECT id, nama_lengkap, singkatan, nama_ketua, jumlah_anggota, deskripsi, gambar
@@ -71,8 +62,6 @@ export async function getAllLembaga(limit = 50): Promise<LembagaItem[]> {
   `;
   return rows as unknown as LembagaItem[];
 }
-
-// ─── Perangkat Desa ─────────────────────────────────
 
 export async function getAllPerangkatDesa(limit = 50): Promise<PerangkatDesa[]> {
   const rows = await sql`
