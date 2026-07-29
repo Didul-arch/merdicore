@@ -14,16 +14,23 @@ const connectionString = process.env.DATABASE_URL!;
  * 2 instance aja udah 20, padahal jatah pooler Supabase cuma 15. Hasilnya:
  * "max clients reached in session mode".
  *
- * max: 1        -> tiap instance cukup 1 koneksi, dia cuma layani 1 request.
+ * max: 5        -> JANGAN turunkan ke 1. Halaman /dashboard jalanin 5 query
+ *                  sekaligus pakai Promise.all; dengan max:1 query-nya saling
+ *                  tunggu di satu koneksi dan halamannya gantung selamanya
+ *                  (kejadian di produksi, sudah direproduksi lokal).
  * idle_timeout  -> lepas koneksi yang nganggur, jangan dipegang terus.
  * prepare: false-> WAJIB kalau pakai pooler transaction mode (port 6543).
  *                  Di mode itu koneksi dipakai gantian antar klien, jadi
  *                  prepared statement gak bisa disimpan.
+ *
+ * Yang bikin error "max clients reached" hilang itu pindah ke port 6543
+ * (transaction mode), bukan max:1 — di mode itu koneksi dibalikin tiap
+ * selesai query, jadi 5 koneksi per instance aman.
  */
 const sql =
   globalThis.postgres ||
   postgres(connectionString, {
-    max: 1,
+    max: 5,
     idle_timeout: 20,
     prepare: false,
   });
