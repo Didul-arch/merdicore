@@ -10,8 +10,7 @@ import sql from "@/lib/db";
 const secret = process.env.NEXTAUTH_SECRET;
 if (!secret) {
   throw new Error(
-    "NEXTAUTH_SECRET belum diisi. Bikin dulu: `openssl rand -base64 32`, " +
-    "lalu simpan di .env.local (lokal) dan Environment Variables (hosting)."
+    "NEXTAUTH_SECRET belum diisi."
   );
 }
 
@@ -21,7 +20,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   pages: {
-    signIn: "/login", // Arahkan ke halaman login custom kita
+    signIn: "/login", // Arahkan ke halaman login custom
   },
   providers: [
     CredentialsProvider({
