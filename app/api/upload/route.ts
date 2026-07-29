@@ -84,7 +84,10 @@ export async function POST(request: Request) {
 
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { success: false, message: 'Ukuran file terlalu besar (maks 5MB)' },
+        {
+          success: false,
+          message: `Ukuran file terlalu besar (${(file.size / 1048576).toFixed(1)} MB, maks ${MAX_SIZE / 1048576} MB)`,
+        },
         { status: 400 }
       );
     }
