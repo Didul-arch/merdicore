@@ -1,21 +1,7 @@
-/**
- * Upload gambar ke /api/upload, tapi diperkecil dulu di browser.
- *
- * Kenapa harus diperkecil di sini, padahal server juga udah kompres pakai
- * sharp? Karena Vercel nolak request yang body-nya lebih dari ~4.5 MB
- * SEBELUM kode kita sempat jalan (balasannya 413 "Request Entity Too Large",
- * berupa teks biasa bukan JSON). Foto HP jaman sekarang gampang 4-8 MB, jadi
- * kalau dikirim mentah bakal langsung ditolak.
- *
- * Bonus: uploadnya jadi jauh lebih cepat, penting kalau internetnya pas-pasan.
- */
-
-const MAX_WIDTH = 1600; // samain dengan yang di app/api/upload/route.ts
+const MAX_WIDTH = 1600; 
 const QUALITY = 0.85;
 
 async function perkecil(file: File): Promise<File> {
-  // SVG itu vektor — kalau digambar ke canvas malah jadi gambar biasa dan
-  // pecah waktu di-zoom. Ukurannya juga kecil, jadi lewati aja.
   if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') return file;
 
   // imageOrientation: 'from-image' penting: canvas gak bawa data EXIF, jadi

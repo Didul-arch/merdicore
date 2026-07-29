@@ -154,12 +154,79 @@ Ngurangin bloat: dead code, dependency yang gak kepake, dan duplikasi — sambil
 
 ---
 
+## Fase 5: Beres-beres Pasca-Deploy — ✅ SELESAI
+**Fokus:** Semua ini ketemu *setelah* situs naik ke Vercel. Polanya menarik: hampir semuanya **jalan mulus di lokal tapi mati di produksi**, karena beda lingkungan (jaringan, environment variable, batas platform) — bukan karena kodenya salah.
+
+### 5.1 Storage penuh sampah + gambar gak dikompres
+* Tombol "X" di dashboard cuma ngapus URL dari DB, file di Supabase Storage ketinggalan. Numpuk jadi **10,27 MB dari 13,39 MB (77% kebuang)**.
+* Foto diupload mentah: **1,7–2,4 MB per gambar**. Kuota gratis 1 GB cuma muat ~400 foto.
+* **Dilakukan:**
+  * `scripts/cleanup-storage.js` + perintah `pnpm cleanup-storage`. Bandingin isi bucket vs URL di DB, sisanya dianggap nyangkut. **Default cuma pratinjau**, baru hapus kalau dikasih `--delete`. Hasil pertama: 13,39 MB → 3,12 MB.
+  * Kompresi pakai `sharp` di `app/api/upload`: `.rotate()` (benerin orientasi EXIF) → resize maks 1600px → WebP q80. Uji foto 4000×3000: **hemat 91,7%**.
+* **Sengaja gak bikin auto-hapus pas klik X:** kalau admin klik X terus batal simpan, file-nya udah terlanjur hilang padahal masih dipakai. Script terpisah lebih aman.
+* **Catatan `.rotate()`:** wajib. `sharp` buang metadata EXIF secara default, jadi tanpa rotate duluan foto HP bisa tampil kebalik. Efek sampingnya bagus — koordinat GPS di EXIF ikut kebuang, lokasi pemotretan gak bocor.
+
+### 5.2 `NEXTAUTH_SECRET` punya nilai cadangan di kode 🔴
+* `secret: process.env.NEXTAUTH_SECRET || "super-secret-key-..."` — kalau di produksi env var-nya kelupaan diisi, NextAuth **diam-diam nandatangani token sesi pakai teks yang ada di repo**. Siapa pun yang baca kode bisa bikin token palsu dan masuk sebagai `super_admin` tanpa tau password. Gak ada error, jalan normal, tapi bolong.
+* **Dilakukan:** nilai cadangannya dihapus, diganti `throw` kalau kosong. Gagal berisik > jalan tapi gak aman.
+* ⚠️ **Kunci lama masih ada di riwayat git (commit `a051eb6`).** Menghapus dari kode gak cukup — **harus diganti dengan kunci baru** (`openssl rand -base64 32`).
+
+### 5.3 Halaman `/[id]` 500 di produksi, halaman lain aman
+* Gejala: `/`, `/berita`, `/umkm` normal; `/berita/2`, `/umkm/1` → 500.
+* **Cara nemuinnya:** cari polanya dulu. Yang jalan = halaman **statis** (data dibekukan sejak build), yang mati = halaman **dinamis** (query DB tiap diakses). Langsung ketauan masalahnya di koneksi DB saat runtime.
+* **Akar masalah:** `db.<ref>.supabase.co` **cuma punya alamat IPv6**. Mesin build Vercel bisa IPv6 (makanya halaman statis jadi), tapi server yang ngelayani request cuma IPv4 → gagal konek.
+* **Dilakukan:** `DATABASE_URL` pindah ke **connection pooler** Supabase yang punya IPv4. URL-nya udah ada di `supabase/.temp/pooler-url` (dibikin CLI pas `supabase link`), tinggal ditambahin password.
+* ⚠️ Username ikut berubah: `postgres` → `postgres.<project-ref>`, wajib buat pooler.
+
+### 5.4 `max clients reached` → lalu `/dashboard` malah gantung
+Ini dua kesalahan berturut-turut, menarik buat dicatat:
+1. **Error awal:** `EMAXCONNSESSION: max clients are limited to pool_size: 15`. Sebabnya `lib/db.ts` gak ngatur apa-apa, jadi `postgres.js` pakai default **10 koneksi per instance** — di serverless, 2 instance aja udah 20, lewat jatah 15.
+2. **Kebablasan mbenerinnya:** disetel `max: 1`. Error hilang, tapi `/dashboard` jadi **gantung >90 detik**. Halaman itu jalanin **5 query sekaligus** (`Promise.all`); dengan 1 koneksi query-nya saling tunggu selamanya.
+   * Gejalanya nyamar jadi masalah login: sub-halaman dashboard normal (client component, ambil data belakangan), tapi `/dashboard` timeout — dan karena habis login diarahkan ke situ, keliatannya "login gak ngapa-ngapain".
+   * Diukur: `max=1` gantung, `max=3` 990ms, `max=5` 979ms → dipakai **`max: 5`**.
+* **Yang sebenernya nyelesaiin masalah koneksi itu pindah ke port `6543` (transaction mode)**, bukan `max: 1`. Di mode itu koneksi dibalikin tiap selesai query, jadi 5 koneksi per instance aman. Butuh `prepare: false` karena koneksi dipakai gantian antar klien.
+
+### 5.5 Upload dari HP: `Unexpected token 'R', "Request En"...`
+* Huruf **R** itu dari **"Request Entity Too Large"**. Vercel nolak request yang body-nya di atas **~4,5 MB** *sebelum* kode kita jalan, balasannya teks biasa — tapi client langsung `res.json()` → meledak jadi pesan yang gak nyambung. `MAX_SIZE` di kode malah 5 MB, lebih tinggi dari batas Vercel, jadi gak pernah kepakai.
+* **Dilakukan:**
+  * `lib/upload-image.ts` — gambar diperkecil dulu **di browser** (canvas, maks 1600px, WebP 0.85) sebelum dikirim. Ukurannya jauh di bawah batas Vercel, sekaligus upload jauh lebih cepat di internet pas-pasan.
+  * Balasan non-JSON ditangani, diterjemahkan jadi pesan yang kebaca orang.
+  * 4 tempat upload (berita, perangkat, umkm utama, umkm galeri) disatukan ke helper itu.
+  * `MAX_SIZE` server → 4 MB (di bawah batas Vercel), pesannya ngikut nilai asli + nampilin ukuran file yang ditolak.
+* **Jebakan yang dihindari:** canvas **gak bawa data EXIF**. Kalau gambar cuma digambar ulang, info orientasi hilang dan `.rotate()` di server jadi gak ngefek → foto HP kebalik. Makanya pakai `createImageBitmap(file, { imageOrientation: 'from-image' })`.
+
+---
+
+## Checklist Deploy (biar gak keulang)
+
+Environment variable yang **wajib** diisi di hosting (Vercel → Settings → Environment Variables). `.env.local` gak ikut ke repo, jadi ini gampang kelupaan:
+
+| Variabel | Isi | Jebakannya |
+|---|---|---|
+| `NEXTAUTH_URL` | `https://<domain-produksi>` | https, **tanpa `/` di akhir**. Harus sama persis dengan domain yang dibuka pengunjung — kalau domain ganti, ini harus ikut ganti |
+| `NEXTAUTH_SECRET` | hasil `openssl rand -base64 32` | **Wajib.** Kalau kosong, build gagal (disengaja) |
+| `DATABASE_URL` | pooler Supabase, **port 6543** | Jangan pakai `db.<ref>.supabase.co` (IPv6 doang, mati di serverless). Username harus `postgres.<project-ref>` |
+| `PUBLIC_BUCKET_ENDPOINT` | sama kayak lokal | |
+| `S3_ACCESS_KEY_ID` | sama kayak lokal | |
+| `S3_SECRET_ACCESS_KEY` | sama kayak lokal | |
+
+Habis ubah env var, **wajib Redeploy** — Vercel gak otomatis pakai nilai baru.
+
+### Kunci yang harus dirotasi
+* **Password database** — pernah ke-print di sesi kerja.
+* **`NEXTAUTH_SECRET`** — kunci lama ada di riwayat GitHub (commit `a051eb6`), permanen. Dihapus dari kode gak cukup.
+* **Password akun admin** yang dipakai buat debug produksi.
+
+---
+
 ## Sengaja TIDAK Dikerjakan (biar gak lupa alasannya)
 
 * **Index database.** Cuma ada 1 index (`berita(views DESC)` — ironisnya kolom yang gak pernah dipakai buat sorting), dan `ORDER BY created_at` / `ILIKE` search emang gak ter-index. **Sengaja gak ditambah:** di skala web desa (puluhan–ratusan baris), Postgres nge-scan 100 baris lebih cepat daripada muter lewat index. Tambahin nanti kalau data udah ribuan DAN beneran kerasa lambat — jangan sekarang.
 * **4 `<img>` sisa di dashboard admin + unused imports.** Admin-only, gak ngaruh ke kecepatan yang dirasain pengunjung. Cosmetic.
 * **`<CrudTable>`/`<CrudModal>` generik.** Field tiap modul beda-beda cukup jauh; dipaksain malah nambah kompleksitas (lihat catatan Fase 2).
 * **Zod.** Cuma 1 endpoint publik tanpa auth (`POST /api/pesan`), udah cukup divalidasi 4 baris `if`. Nambah dependency buat itu doang = mubazir.
+* **Auto-hapus file storage pas klik "X".** Kalau admin klik X terus batal simpan, file-nya udah terlanjur hilang padahal masih dipakai. Pakai `pnpm cleanup-storage` sesekali (sebulan sekali cukup) — dia bandingin ke DB dulu, jadi gak mungkin salah hapus.
+* **Naikin `MAX_WIDTH` di atas 1600px.** Sempat dipertimbangkan waktu ngira error upload gara-gara resolusi. Bukan itu penyebabnya — dan naikin malah bikin file makin besar sehingga makin gampang kena batas body Vercel (~4,5 MB). Area tampil terlebar di situs cuma ~800px, jadi 1600px udah 2× lipat (cukup buat layar retina).
 
 ---
 
@@ -180,3 +247,26 @@ Ini sering bikin bingung, jadi dicatat di sini biar jelas. **Aturan intinya cuma
 Kenapa dashboard gak ikut pola Server Component? Karena dia butuh interaktif (modal, form, search real-time, tombol hapus) — itu semua wajib jalan di browser. Dan begitu kode jalan di browser, satu-satunya jalan ke DB ya lewat API route.
 
 **Yang justru salah** (dan alhamdulillah gak ada di project ini): Server Component yang manggil `fetch('/api/...')` ke API-nya sendiri. Itu buang-buang 1 lompatan network — mending query langsung.
+
+---
+
+## Catatan: Cara Nyari Bug "Jalan di Lokal, Mati di Produksi"
+
+Hampir semua masalah di Fase 5 bentuknya begini, dan cara nemuinnya selalu sama: **cari polanya dulu, jangan langsung nebak.**
+
+Contoh nyata dari Fase 5.3:
+
+```
+/          → 200 ✅        /berita/2  → 500 ❌
+/berita    → 200 ✅        /umkm/1    → 500 ❌
+/umkm      → 200 ✅
+```
+
+Dari daftar itu langsung keliatan: yang jalan semuanya **statis**, yang mati semuanya **dinamis**. Bedanya cuma satu — halaman dinamis butuh DB saat diakses. Ketemu arah masalahnya tanpa buka satu baris kode pun.
+
+Kalau langsung nebak ("mungkin NEXTAUTH_URL?"), bisa buang waktu berjam-jam — dan itu beneran kejadian di Fase 5.4, di mana gejalanya keliatan kayak masalah login padahal akarnya di setelan koneksi database.
+
+Tiga penyebab paling sering, urut dari yang paling mungkin:
+1. **Environment variable** beda / kelupaan diisi (`.env.local` gak ikut ke repo)
+2. **Jaringan** beda (IPv6 vs IPv4, CDN keblokir, DNS beda)
+3. **Batas platform** yang gak ada di lokal (batas body request, timeout fungsi, batas koneksi DB)
