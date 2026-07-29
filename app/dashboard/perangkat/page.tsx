@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Toast from "@/components/dashboard/Toast";
 import fetcher from "@/lib/swr-fetcher";
+import { uploadImage } from "@/lib/upload-image";
 
 /* ─────────── Types ─────────── */
 interface Perangkat {
@@ -116,13 +117,7 @@ export default function PerangkatDesaPage() {
         try {
             let imageUrl = fFoto;
             if (fFile) {
-                const formData = new FormData();
-                formData.append('file', fFile);
-                formData.append('folder', 'avatar');
-                const upRes = await fetch('/api/upload', { method: 'POST', body: formData });
-                const upJson = await upRes.json();
-                if (!upRes.ok) throw new Error(upJson.message || 'Gagal upload foto');
-                imageUrl = upJson.data.url;
+                imageUrl = await uploadImage(fFile, 'avatar');
             }
 
             const payload = {

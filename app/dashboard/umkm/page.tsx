@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Toast from "@/components/dashboard/Toast";
 import fetcher from "@/lib/swr-fetcher";
+import { uploadImage } from "@/lib/upload-image";
 
 /* ─────────── Types ─────────── */
 interface Umkm {
@@ -124,28 +125,15 @@ export default function UmkmManagementPage() {
         try {
             let imageUrl = fGambar;
             if (fFile) {
-                const formData = new FormData();
-                formData.append('file', fFile);
-                formData.append('folder', 'umkm');
-                const upRes = await fetch('/api/upload', { method: 'POST', body: formData });
-                const upJson = await upRes.json();
-                if (!upRes.ok) throw new Error(upJson.message || 'Gagal upload gambar utama');
-                imageUrl = upJson.data.url;
+                imageUrl = await uploadImage(fFile, 'umkm');
             }
 
-            // Upload gallery photos concurrently
+            // Upload foto galeri barengan
             let galleryUrls = [...fGaleriFoto];
             if (fGaleriFiles.length > 0) {
-                const uploadPromises = fGaleriFiles.map(async (file) => {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('folder', 'umkm/galeri');
-                    const upRes = await fetch('/api/upload', { method: 'POST', body: formData });
-                    const upJson = await upRes.json();
-                    if (!upRes.ok) throw new Error(upJson.message || `Gagal upload gambar galeri: ${file.name}`);
-                    return upJson.data.url;
-                });
-                const newGalleryUrls = await Promise.all(uploadPromises);
+                const newGalleryUrls = await Promise.all(
+                    fGaleriFiles.map((file) => uploadImage(file, 'umkm/galeri'))
+                );
                 galleryUrls = [...galleryUrls, ...newGalleryUrls];
             }
 

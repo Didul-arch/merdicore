@@ -27,8 +27,13 @@ const BUCKET = 'public-assets';
 const ALLOWED_FOLDERS = ['berita', 'umkm', 'avatar', 'umkm/galeri'] as const;
 type Folder = typeof ALLOWED_FOLDERS[number];
 
-// Max file size: 5MB
-const MAX_SIZE = 5 * 1024 * 1024;
+// Vercel nolak request yang body-nya lebih dari ~4.5 MB SEBELUM kode ini jalan
+// (balasannya 413 teks biasa, bukan JSON). Jadi batas di sini dibikin lebih
+// rendah dari itu, biar yang kelewat batas dapat pesan error yang jelas dari
+// kita, bukan error mentah dari Vercel.
+// Normalnya gambar udah diperkecil duluan di browser (lihat lib/upload-image.ts),
+// jadi batas ini cuma jaring pengaman.
+const MAX_SIZE = 4 * 1024 * 1024;
 
 // Allowed MIME types
 const ALLOWED_TYPES = [
