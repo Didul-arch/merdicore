@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import type { Regulation } from '@/lib/types';
 import RegulasiFilter from '@/components/regulasi/RegulasiFilter';
+
+export const metadata: Metadata = {
+  title: "Produk Hukum",
+  description: "Peraturan Desa (Perdes) dan keputusan resmi Desa Pulung Merdiko yang terbuka untuk umum.",
+  openGraph: { title: "Produk Hukum", description: "Peraturan Desa (Perdes) dan keputusan resmi Desa Pulung Merdiko yang terbuka untuk umum." },
+};
 
 const REGULATIONS: Regulation[] = [
   { id: 'reg-1', number: 'Perdes No 02 Tahun 2026', year: 2026, category: 'Keuangan', title: 'Anggaran Pendapatan dan Belanja Desa (APBDes) Tahun Anggaran 2026', status: 'Berlaku', summary: 'Peraturan desa yang mengatur rincian rencana alokasi penerimaan pendapatan asli desa, dana desa dari APBN, alokasi dana desa dari APBD kabupaten, serta rencana pengeluaran belanja desa untuk program pembangunan infrastruktur jalan Dusun Mulyorejo, pemberdayaan tani, dan pelayanan warga.', uploadedDate: '15 Jan 2026' },

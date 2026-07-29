@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
 
 // File font disimpan di repo (app/fonts/), BUKAN didownload pas build.
 // Sengaja pakai next/font/local, bukan next/font/google, biar build gak
@@ -23,8 +24,32 @@ const spaceGrotesk = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Desa Pulung Merdiko",
-  description: "Profil resmi Desa Pulung Merdiko, Kecamatan Pulung, Ponorogo.",
+  // metadataBase bikin URL gambar preview jadi absolut. Tanpa ini, kartu
+  // preview di WhatsApp/Facebook gagal muat gambarnya.
+  metadataBase: new URL(SITE_URL),
+
+  title: {
+    default: SITE_NAME,
+    // Halaman anak cukup menyebut judulnya sendiri; nama desa ditempel otomatis.
+    // Contoh: "Bedhol Pusoko" -> "Bedhol Pusoko — Desa Pulung Merdiko"
+    template: `%s — ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+
+  // Dipakai WhatsApp, Facebook, Telegram saat link dibagikan.
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

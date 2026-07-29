@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { Users2 } from 'lucide-react';
 import { getAllLembaga } from '@/lib/fetchers';
 import LembagaTabs from '@/components/lembaga/LembagaTabs';
+
+export const metadata: Metadata = {
+  title: "Lembaga Desa",
+  description: "Organisasi kemasyarakatan Desa Pulung Merdiko: PKK, Karang Taruna, LPMD, dan lainnya.",
+  openGraph: { title: "Lembaga Desa", description: "Organisasi kemasyarakatan Desa Pulung Merdiko: PKK, Karang Taruna, LPMD, dan lainnya." },
+};
 
 // Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
 export const revalidate = 60;

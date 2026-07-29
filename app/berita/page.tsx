@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { getLatestBerita } from '@/lib/fetchers';
 import BeritaSearchableList from '@/components/berita/BeritaSearchableList';
+
+export const metadata: Metadata = {
+  title: "Berita Desa",
+  description: "Kabar terbaru, pengumuman, dan kegiatan warga Desa Pulung Merdiko, Kecamatan Pulung, Ponorogo.",
+  openGraph: { title: "Berita Desa", description: "Kabar terbaru, pengumuman, dan kegiatan warga Desa Pulung Merdiko, Kecamatan Pulung, Ponorogo." },
+};
 
 // Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
 export const revalidate = 60;

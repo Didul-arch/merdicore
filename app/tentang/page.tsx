@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import Image from 'next/image';
 import { Eye, BookOpen, Landmark, Users } from 'lucide-react';
 import { getAllPerangkatDesa } from '@/lib/fetchers';
 import OfficialCard from '@/components/tentang/OfficialCard';
+
+export const metadata: Metadata = {
+  title: "Profil Desa",
+  description: "Sejarah, visi misi, dan susunan perangkat Desa Pulung Merdiko, Kecamatan Pulung, Kabupaten Ponorogo.",
+  openGraph: { title: "Profil Desa", description: "Sejarah, visi misi, dan susunan perangkat Desa Pulung Merdiko, Kecamatan Pulung, Kabupaten Ponorogo." },
+};
 
 // Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
 export const revalidate = 60;

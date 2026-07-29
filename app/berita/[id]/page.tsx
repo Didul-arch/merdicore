@@ -1,12 +1,45 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Calendar, Eye, ArrowLeft, User, BookOpen } from 'lucide-react';
 import { getBeritaById, incrementBeritaViews } from '@/lib/fetchers';
 import ZoomableImage from '@/components/ZoomableImage';
-import { formatDate, keHtml } from '@/lib/utils';
+import { formatDate, keHtml, teksPolos } from '@/lib/utils';
+import { ringkas } from '@/lib/site';
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+// Tanpa ini, semua berita muncul di Google dengan judul yang sama
+// ("Desa Pulung Merdiko") — mesin pencari tidak punya alasan menampilkannya
+// untuk pencarian yang spesifik. Juga yang bikin kartu preview muncul waktu
+// link dibagikan ke WhatsApp.
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const berita = await getBeritaById(parseInt(id));
+  if (!berita) return { title: 'Berita tidak ditemukan' };
+
+  const deskripsi = ringkas(teksPolos(berita.konten));
+
+  return {
+    title: berita.judul,
+    description: deskripsi,
+    openGraph: {
+      type: 'article',
+      title: berita.judul,
+      description: deskripsi,
+      publishedTime: berita.created_at,
+      modifiedTime: berita.updated_at,
+      images: berita.gambar ? [berita.gambar] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: berita.judul,
+      description: deskripsi,
+      images: berita.gambar ? [berita.gambar] : undefined,
+    },
+  };
 }
 
 export default async function BeritaDetailPage({ params }: Props) {
