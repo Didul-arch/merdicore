@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
+import { parsePagination } from '@/lib/pagination';
 
 // GET: Ambil berita dengan pagination
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+    const { page, limit, offset } = parsePagination(searchParams);
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || ''; // 'draft' | 'published' | ''
-    const offset = (page - 1) * limit;
 
     let berita;
     let countResult;
@@ -119,9 +118,9 @@ export async function POST(request: Request) {
       data: result[0],
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
-    if (error.code === '23505') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
       return NextResponse.json({ success: false, message: 'Slug sudah digunakan' }, { status: 409 });
     }
     return NextResponse.json({ success: false, message: 'Gagal menyimpan berita' }, { status: 500 });

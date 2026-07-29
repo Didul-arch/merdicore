@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole } from '@/lib/auth';
+import { parsePagination } from '@/lib/pagination';
 import bcrypt from 'bcryptjs';
 
 // 1. GET: Mengambil data users dengan pagination
@@ -12,10 +13,8 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+    const { page, limit, offset } = parsePagination(searchParams);
     const search = searchParams.get('search') || '';
-    const offset = (page - 1) * limit;
 
     let users;
     let countResult;
@@ -92,10 +91,10 @@ export async function POST(request: Request) {
       data: newUser
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
     // Tangkap error unique constraint jika email sudah ada
-    if (error.code === '23505') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
       return NextResponse.json({ success: false, message: 'Email sudah terdaftar' }, { status: 409 });
     }
     return NextResponse.json({ success: false, message: 'Gagal menyimpan data' }, { status: 500 });

@@ -119,10 +119,10 @@ export async function POST(request: Request) {
       },
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('S3 Upload error:', error);
     return NextResponse.json(
-      { success: false, message: `Gagal mengupload gambar: ${error.message || 'Unknown error'}` },
+      { success: false, message: `Gagal mengupload gambar: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
