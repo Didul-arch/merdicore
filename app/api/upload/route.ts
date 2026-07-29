@@ -3,13 +3,11 @@ import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import sharp from 'sharp';
 
-// S3 Configuration from environment variables
 const endpoint = process.env.PUBLIC_BUCKET_ENDPOINT || '';
-const region = 'auto'; // Supabase S3 usually uses 'auto' or 'ap-southeast-1' but S3 API accepts 'auto'
+const region = 'auto';
 const accessKeyId = process.env.S3_ACCESS_KEY_ID || '';
 const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY || '';
 
-// Initialize S3 Client for Supabase Storage
 const s3Client = new S3Client({
   forcePathStyle: true,
   region,
@@ -20,22 +18,16 @@ const s3Client = new S3Client({
   },
 });
 
-// Bucket name in Supabase Storage
 const BUCKET = 'public-assets';
 
-// Allowed folders inside the bucket
 const ALLOWED_FOLDERS = ['berita', 'umkm', 'avatar', 'umkm/galeri'] as const;
 type Folder = typeof ALLOWED_FOLDERS[number];
 
-// Vercel nolak request yang body-nya lebih dari ~4.5 MB SEBELUM kode ini jalan
-// (balasannya 413 teks biasa, bukan JSON). Jadi batas di sini dibikin lebih
-// rendah dari itu, biar yang kelewat batas dapat pesan error yang jelas dari
-// kita, bukan error mentah dari Vercel.
-// Normalnya gambar udah diperkecil duluan di browser (lihat lib/upload-image.ts),
-// jadi batas ini cuma jaring pengaman.
+// Harus di bawah batas body Vercel (~4.5 MB) supaya yang kegedean dapat pesan
+// error dari kita, bukan 413 mentah yang bukan JSON. Gambar biasanya sudah
+// diperkecil di browser (lib/upload-image.ts), ini cuma jaring pengaman.
 const MAX_SIZE = 4 * 1024 * 1024;
 
-// Allowed MIME types
 const ALLOWED_TYPES = [
   'image/jpeg',
   'image/png',
@@ -44,16 +36,13 @@ const ALLOWED_TYPES = [
   'image/svg+xml',
 ];
 
-// Lebar maksimum gambar yang disimpan. Foto HP mentah bisa 4000px / 2.5MB,
-// padahal area tampil terlebar di situs ini cuma ~800px. 1600px udah cukup
-// buat layar retina (2x) dan bikin ukurannya turun drastis.
+// Area tampil terlebar di situs ~800px, jadi 1600px sudah cukup untuk layar
+// retina. Foto HP mentah (4000px) dikecilkan ke sini.
 const MAX_WIDTH = 1600;
 const WEBP_QUALITY = 80;
 
-// POST: Upload gambar ke Supabase Storage via S3 API
 export async function POST(request: Request) {
   try {
-    // Auth check
     const session = await requireRole(ADMIN_ROLES);
     if (!session) {
       return NextResponse.json(
@@ -62,12 +51,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Parse multipart form data
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const folder = formData.get('folder') as string | null;
 
-    // Validation
     if (!file) {
       return NextResponse.json(
         { success: false, message: 'File tidak ditemukan' },
@@ -123,12 +110,10 @@ export async function POST(request: Request) {
       // karena foto HP sering nyimpen titik koordinat GPS lokasi pemotretan.
     }
 
-    // Generate unique filename
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8);
     const fileName = `${folder}/${timestamp}-${randomStr}.${ext}`;
 
-    // Upload to Supabase Storage via S3 API
     const command = new PutObjectCommand({
       Bucket: BUCKET,
       Key: fileName,
@@ -138,9 +123,7 @@ export async function POST(request: Request) {
 
     await s3Client.send(command);
 
-    // Construct public URL
-    // S3 Endpoint is usually https://[project].storage.supabase.co/storage/v1/s3
-    // Public URL pattern is https://[project].supabase.co/storage/v1/object/public/[bucket]/[key]
+    // Host untuk S3 API beda dengan host URL publik, jadi perlu ditukar.
     const baseUrl = endpoint.replace('.storage.supabase.co/storage/v1/s3', '.supabase.co');
     const publicUrl = `${baseUrl}/storage/v1/object/public/${BUCKET}/${fileName}`;
 

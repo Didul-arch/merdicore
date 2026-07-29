@@ -1,8 +1,3 @@
-/* ═══════════════════════════════════════════════════
-   Shared Types — Database model interfaces
-   Sumber kebenaran tunggal untuk semua halaman.
-   ═══════════════════════════════════════════════════ */
-
 // === Berita ===
 
 export interface BeritaItem {

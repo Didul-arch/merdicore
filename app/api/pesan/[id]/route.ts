@@ -6,7 +6,6 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// PUT: Update status pesan (Admin Only)
 export async function PUT(request: Request, context: RouteContext) {
   try {
     const session = await requireRole(ADMIN_ROLES);
@@ -45,7 +44,6 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-// DELETE: Hapus pesan (Admin Only)
 export async function DELETE(request: Request, context: RouteContext) {
   try {
     const session = await requireRole(ADMIN_ROLES);

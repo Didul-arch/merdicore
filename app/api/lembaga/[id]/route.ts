@@ -6,7 +6,27 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// PUT: Update lembaga
+export async function GET(request: Request, context: RouteContext) {
+  try {
+    const session = await requireRole(ADMIN_ROLES);
+    if (!session) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await context.params;
+    const rows = await sql`SELECT * FROM lembaga WHERE id = ${parseInt(id)}`;
+
+    if (rows.length === 0) {
+      return NextResponse.json({ success: false, message: 'Lembaga tidak ditemukan' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, data: rows[0] }, { status: 200 });
+
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ success: false, message: 'Gagal mengambil data' }, { status: 500 });
+  }
+}
+
 export async function PUT(request: Request, context: RouteContext) {
   try {
     const session = await requireRole(ADMIN_ROLES);
@@ -50,7 +70,6 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-// DELETE: Hapus lembaga
 export async function DELETE(request: Request, context: RouteContext) {
   try {
     const session = await requireRole(ADMIN_ROLES);

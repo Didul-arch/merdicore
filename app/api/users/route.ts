@@ -4,7 +4,6 @@ import { requireRole } from '@/lib/auth';
 import { parsePagination } from '@/lib/pagination';
 import bcrypt from 'bcryptjs';
 
-// 1. GET: Mengambil data users dengan pagination
 export async function GET(request: Request) {
   try {
     const session = await requireRole(['super_admin']);
@@ -74,7 +73,6 @@ export async function GET(request: Request) {
   }
 }
 
-// 2. POST: Menambahkan user baru
 export async function POST(request: Request) {
   try {
     const session = await requireRole(['super_admin']);

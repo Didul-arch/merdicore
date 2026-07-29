@@ -20,7 +20,6 @@ export default async function TentangPage() {
     <div className="py-24 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
 
-        {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/50">PROFIL DESA</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">
@@ -32,7 +31,6 @@ export default async function TentangPage() {
           <div className="h-1 w-16 bg-teal-600 rounded mx-auto mt-2" />
         </div>
 
-        {/* ═══ Sejarah ═══ */}
         <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-sm border border-gray-100 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-5 relative">
             <div className="absolute -top-4 -left-4 w-24 h-24 bg-teal-100 rounded-full blur-xl opacity-60 -z-10" />
@@ -67,7 +65,6 @@ export default async function TentangPage() {
           </div>
         </div>
 
-        {/* ═══ Visi & Misi ═══ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Visi */}
           <div className="bg-white rounded-3xl p-8 sm:p-10 shadow-sm border border-gray-100 space-y-6 flex flex-col justify-between">
@@ -124,7 +121,6 @@ export default async function TentangPage() {
           </div>
         </div>
 
-        {/* ═══ Perangkat Desa ═══ */}
         <div className="space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <div className="flex justify-center">
