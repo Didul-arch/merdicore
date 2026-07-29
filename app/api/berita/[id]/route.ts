@@ -6,6 +6,36 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
+// Dipakai halaman edit. Query daftar sengaja gak ikut ambil kolom konten
+// (isinya panjang, mubazir dikirim buat semua baris), jadi form edit ambil
+// satu data lengkap dari sini.
+export async function GET(request: Request, context: RouteContext) {
+  try {
+    const session = await requireRole(ADMIN_ROLES);
+    if (!session) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await context.params;
+    const rows = await sql`
+      SELECT b.id, b.judul, b.slug, b.konten, b.gambar, b.status, b.views,
+             b.created_at, b.updated_at, u.nama AS penulis_nama
+      FROM berita b
+      LEFT JOIN users u ON b.penulis_id = u.id
+      WHERE b.id = ${parseInt(id)}
+    `;
+
+    if (rows.length === 0) {
+      return NextResponse.json({ success: false, message: 'Berita tidak ditemukan' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, data: rows[0] }, { status: 200 });
+
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ success: false, message: 'Gagal mengambil data' }, { status: 500 });
+  }
+}
+
 export async function PUT(request: Request, context: RouteContext) {
   try {
     const session = await requireRole(ADMIN_ROLES);

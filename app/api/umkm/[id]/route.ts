@@ -6,6 +6,33 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
+export async function GET(request: Request, context: RouteContext) {
+  try {
+    const session = await requireRole(ADMIN_ROLES);
+    if (!session) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await context.params;
+    const rows = await sql`
+      SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat,
+             um.gambar, um.galeri_foto, um.created_at, u.nama AS pemilik_nama
+      FROM umkm um
+      LEFT JOIN users u ON um.pemilik_id = u.id
+      WHERE um.id = ${parseInt(id)}
+    `;
+
+    if (rows.length === 0) {
+      return NextResponse.json({ success: false, message: 'UMKM tidak ditemukan' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, data: rows[0] }, { status: 200 });
+
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ success: false, message: 'Gagal mengambil data' }, { status: 500 });
+  }
+}
+
 export async function PUT(request: Request, context: RouteContext) {
   try {
     const session = await requireRole(ADMIN_ROLES);

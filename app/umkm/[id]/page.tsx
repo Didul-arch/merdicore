@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Phone, Building, User, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { getUmkmById } from '@/lib/fetchers';
 import WhatsAppButton from '@/components/umkm/WhatsAppButton';
+import Lightbox from '@/components/Lightbox';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -18,9 +19,18 @@ export default async function UmkmDetailPage({ params }: Props) {
   const product = await getUmkmById(umkmId);
   if (!product) notFound();
 
+  // Gambar utama + galeri digabung jadi satu daftar, biar di dalam lightbox
+  // bisa digeser kiri-kanan antar semua foto usaha ini.
+  const semuaFoto = [product.gambar, ...(product.galeri_foto ?? [])].filter(
+    (f): f is string => Boolean(f)
+  );
+
   return (
     <div className="py-24 bg-slate-50 min-h-screen">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Lightbox fotos={semuaFoto} alt={product.nama_usaha}>
+      {(buka) => (
+        <>
 
         <Link
           href="/umkm"
@@ -33,20 +43,22 @@ export default async function UmkmDetailPage({ params }: Props) {
         <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 p-6 md:p-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {/* Gambar Utama */}
-            <div className="relative h-72 md:h-96 rounded-3xl overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center">
-              {product.gambar ? (
-                <Image
-                  src={product.gambar}
-                  alt={product.nama_usaha}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                  className="object-cover hover:scale-[1.02] transition-transform duration-500"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <ShoppingBag className="w-24 h-24 text-teal-200" />
-              )}
+                  <div className="relative h-72 md:h-96 rounded-3xl overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center">
+                    {product.gambar ? (
+                      <button onClick={() => buka(0)} className="absolute inset-0 w-full h-full cursor-zoom-in" aria-label="Perbesar gambar">
+                        <Image
+                          src={product.gambar}
+                          alt={product.nama_usaha}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          priority
+                          className="object-cover hover:scale-[1.02] transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                      </button>
+                    ) : (
+                      <ShoppingBag className="w-24 h-24 text-teal-200" />
+                    )}
             </div>
 
             <div className="space-y-6 flex flex-col justify-center">
@@ -99,7 +111,12 @@ export default async function UmkmDetailPage({ params }: Props) {
             <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight">Galeri Produk</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {product.galeri_foto.map((foto, index) => (
-                <div key={index} className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 group">
+                <button
+                  key={index}
+                  onClick={() => buka(product.gambar ? index + 1 : index)}
+                  className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 group cursor-zoom-in"
+                  aria-label={`Perbesar foto galeri ${index + 1}`}
+                >
                   <Image
                     src={foto}
                     alt={`${product.nama_usaha} - Galeri ${index + 1}`}
@@ -109,12 +126,15 @@ export default async function UmkmDetailPage({ params }: Props) {
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                </div>
+                </button>
               ))}
             </div>
           </div>
         )}
 
+        </>
+      )}
+      </Lightbox>
       </div>
     </div>
   );
