@@ -135,16 +135,17 @@ Ngurangin bloat: dead code, dependency yang gak kepake, dan duplikasi — sambil
 * **Bug — Data publik beku sejak `next build` → DIPERBAIKI:**
   5 halaman publik yang query DB (`/`, `/berita`, `/umkm`, `/tentang`, `/lembaga`) semuanya `○ Static` di build output, dan **gak ada satupun `export const revalidate` di seluruh project**. Artinya data di-query sekali pas build lalu dibekukan — admin publish berita baru, halaman publik gak akan pernah nampilin sampai situs di-build & deploy ulang. Kelas bug yang sama kayak Fase 0.9: fiturnya keliatan jalan, aslinya nggak.
   **Dilakukan:** `export const revalidate = 60` di 5 halaman itu (ISR). Halaman tetap dilayani dari cache statis (kenceng), cuma di-regenerate di background tiap 60 detik — jauh lebih ringan daripada `dynamic = 'force-dynamic'` yang query DB tiap request. Terbukti di build output: kolom `Revalidate` sekarang `1m` di kelima halaman.
-* **Perf — Font `next/font` → ❌ DIBATALKAN, balik ke `@import`:**
-  Sempat dipindah ke `next/font/google` (self-hosted pas build, harusnya lebih cepat buat pengunjung). **Tapi dibatalkan** karena `next/font/google` **download file font pas build** ke `fonts.gstatic.com` — dan di jaringan sini sering gagal, bikin `next build` error:
-  ```
-  Module not found: Can't resolve '@vercel/turbopack-next/internal/font/google/font'
-  ```
-  Kejadian di sandbox (gagal 2 dari 3 build) **dan** di mesin dev. Build yang gagal separuh waktu jauh lebih merugikan daripada font yang loading-nya sedikit lebih lambat, jadi dibalikin ke `@import` CSS. Setelah dibalikin: 3 dari 3 build sukses dari cache kosong.
-  **Kalau nanti mau dicoba lagi** (misal deploy di Vercel yang jaringannya stabil), ada 2 opsi:
-  1. Balik ke `next/font/google` — cukup di lingkungan build yang bisa akses `fonts.gstatic.com`.
-  2. Lebih aman: download file `.woff2`-nya manual, simpan di repo, pakai `next/font/local` — sekali setup, gak butuh internet pas build selamanya.
-  Yang masih bisa dikerjain tanpa risiko: kurangi weight yang di-load di URL `@import`-nya. Sekarang narik 9 weight Inter (300–900), padahal kemungkinan cuma 3-4 yang kepake.
+* **Perf — Font `@import` Google → `next/font/local` (lewat 3 percobaan):**
+  1. **Percobaan 1 — `next/font/google`: GAGAL.** Dia download file font pas build ke `fonts.gstatic.com`. Di jaringan hotspot (IPv6/NAT64) sering gagal → build error `Module not found: Can't resolve '@vercel/turbopack-next/internal/font/google/font'`. Gagal 2 dari 3 build. Sempat dibalikin ke `@import` CSS.
+  2. **Percobaan 2 — cek jaringan.** Ketahuan `fonts.googleapis.com` (metadata CSS) bisa diakses, tapi `fonts.gstatic.com` (file font aslinya) gak tembus di jaringan itu.
+  3. **Percobaan 3 — `next/font/local`: BERHASIL ✅.** Numpang jaringan lain sebentar, download 2 file variable font ke `app/fonts/` (Inter 48KB + Space Grotesk 22KB, subset latin), lalu pakai `next/font/local`.
+  **Kenapa `local` lebih baik daripada `google` di sini:** file font ikut masuk repo, jadi **build gak pernah butuh internet lagi** — mau di hotspot, kampus, atau CI manapun tetap jalan. Pengunjung juga nol request ke Google (sama seperti versi `google`).
+  Hasil: 3 dari 3 build sukses dari cache kosong.
+* **Bonus — `DATABASE_URL` pindah ke connection pooler (ketemu tak sengaja pas build):**
+  Build sempat gagal `connect ENETUNREACH 2406:da14:...:5432`. Ternyata `db.<ref>.supabase.co` **cuma punya alamat IPv6**, jadi mati total di jaringan IPv4-only. Diganti ke pooler Supabase (`aws-0-ap-northeast-1.pooler.supabase.com:5432`) yang punya IPv4 — URL-nya udah ada di `supabase/.temp/pooler-url` (dibikin CLI pas `supabase link`), tinggal ditambahin password.
+  ⚠️ Perhatikan username-nya ikut berubah: `postgres` → `postgres.<project-ref>`, wajib buat pooler.
+  Pakai port **5432 (session mode)** — perilakunya sama kayak koneksi biasa, gak perlu ubah kode. Ada juga 6543 (transaction mode) yang lebih hemat buat serverless, tapi butuh `prepare: false` di `postgres.js` — belum perlu sekarang.
+  Ini perubahan di `.env.local` (gak ke-commit, di-gitignore). **Kalau deploy, jangan lupa set `DATABASE_URL` versi pooler ini di environment variable hosting-nya.**
 * **Cleanup — 7 handler API mati dihapus:**
   Dicek satu-satu: dashboard cuma manggil `PUT` + `DELETE` di route `[id]`. Yang gak pernah dipanggil dari manapun → dihapus: `GET` di 6 route `[id]` (`berita`, `umkm`, `lembaga`, `perangkat-desa`, `users`, `pesan`) + `PATCH` di `berita/[id]` (increment views — halaman detail publik ternyata pakai `incrementBeritaViews()` dari `fetchers.ts` langsung, bukan lewat API).
 * **Cleanup — sisa lint:** `any` + 5 import gak kepake di `app/dashboard/page.tsx` (satu-satunya halaman dashboard yang belum kesentuh Fase 2), `ChevronDown` di `Header.tsx`, `eslint-disable` mubazir di `lib/db.ts`, `NextAuth` import gak kepake di `types/next-auth.d.ts`.
