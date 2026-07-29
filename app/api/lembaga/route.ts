@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 import { parsePagination } from '@/lib/pagination';
+import { bersihkanHtml } from '@/lib/sanitize';
+import { adaIsinya } from '@/lib/utils';
 
 export async function GET(request: Request) {
   try {
@@ -62,6 +64,10 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
+    // Opsional, jadi simpan null (bukan "<p></p>") kalau editor dibiarkan kosong.
+    const deskripsiBersih = bersihkanHtml(body.deskripsi || '');
+    const deskripsi = adaIsinya(deskripsiBersih) ? deskripsiBersih : null;
+
     if (!body.nama_lengkap) {
       return NextResponse.json({ success: false, message: 'Nama lengkap lembaga wajib diisi' }, { status: 400 });
     }
@@ -73,7 +79,7 @@ export async function POST(request: Request) {
         ${body.singkatan || null}, 
         ${body.nama_ketua || null}, 
         ${body.jumlah_anggota || 0}, 
-        ${body.deskripsi || null}, 
+        ${deskripsi}, 
         ${body.gambar || null}
       )
       RETURNING *

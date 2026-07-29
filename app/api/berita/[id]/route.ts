@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
+import { bersihkanHtml } from '@/lib/sanitize';
+import { adaIsinya } from '@/lib/utils';
+import { hapusGambar, hapusGambarYangDilepas, kumpulkanGambar } from '@/lib/storage';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -47,15 +50,20 @@ export async function PUT(request: Request, context: RouteContext) {
     const beritaId = parseInt(id);
     const body = await request.json();
 
-    if (!body.judul || !body.konten) {
+    const konten = bersihkanHtml(body.konten || '');
+
+    if (!body.judul || !adaIsinya(konten)) {
       return NextResponse.json({ success: false, message: 'Judul dan konten wajib diisi' }, { status: 400 });
     }
+
+    // Ambil kondisi LAMA dulu, buat dibandingkan setelah update.
+    const sebelum = await sql`SELECT gambar, konten FROM berita WHERE id = ${beritaId}`;
 
     const result = await sql`
       UPDATE berita
       SET judul = ${body.judul},
           slug = ${body.slug || ''},
-          konten = ${body.konten},
+          konten = ${konten},
           gambar = ${body.gambar || null},
           status = ${body.status || 'draft'},
           updated_at = NOW()
@@ -66,6 +74,14 @@ export async function PUT(request: Request, context: RouteContext) {
     if (result.length === 0) {
       return NextResponse.json({ success: false, message: 'Berita tidak ditemukan' }, { status: 404 });
     }
+
+    // Gambar yang tadinya dipakai tapi sekarang sudah tidak, ikut dihapus dari
+    // storage. Dijalankan SETELAH update berhasil supaya file tidak hilang
+    // percuma kalau update-nya gagal.
+    await hapusGambarYangDilepas(
+      [sebelum[0]?.gambar as string, sebelum[0]?.konten as string],
+      [body.gambar, konten],
+    );
 
     return NextResponse.json({
       success: true,
@@ -89,16 +105,23 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const beritaId = parseInt(id);
 
-    const result = await sql`DELETE FROM berita WHERE id = ${beritaId} RETURNING id, judul`;
+    // RETURNING sekalian ambil kolom gambarnya, supaya file-nya bisa ikut
+    // dihapus tanpa perlu query tambahan.
+    const result = await sql`
+      DELETE FROM berita WHERE id = ${beritaId}
+      RETURNING id, judul, gambar, konten
+    `;
 
     if (result.length === 0) {
       return NextResponse.json({ success: false, message: 'Berita tidak ditemukan' }, { status: 404 });
     }
 
+    await hapusGambar(kumpulkanGambar(result[0].gambar as string, result[0].konten as string));
+
     return NextResponse.json({
       success: true,
       message: 'Berita berhasil dihapus',
-      data: result[0],
+      data: { id: result[0].id, judul: result[0].judul },
     }, { status: 200 });
 
   } catch (error) {

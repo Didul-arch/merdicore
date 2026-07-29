@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { Calendar, Eye, ArrowLeft, User, BookOpen } from 'lucide-react';
 import { getBeritaById, incrementBeritaViews } from '@/lib/fetchers';
 import ZoomableImage from '@/components/ZoomableImage';
-import { formatDate } from '@/lib/utils';
+import { formatDate, keHtml } from '@/lib/utils';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -74,9 +74,13 @@ export default async function BeritaDetailPage({ params }: Props) {
           </div>
 
           <div className="p-6 md:p-10">
-            <div className="prose prose-teal max-w-none text-gray-700 leading-loose whitespace-pre-line text-sm sm:text-base">
-              {berita.konten}
-            </div>
+            {/* keHtml() membungkus data lama yang masih teks polos jadi <p>,
+                supaya paragrafnya tidak menyatu. Isi HTML-nya sendiri sudah
+                disaring di API sebelum masuk database (lihat lib/sanitize.ts). */}
+            <div
+              className="prose prose-teal max-w-none text-sm sm:text-base prose-img:rounded-xl"
+              dangerouslySetInnerHTML={{ __html: keHtml(berita.konten) }}
+            />
           </div>
         </article>
       </div>

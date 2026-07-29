@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 import { parsePagination } from '@/lib/pagination';
+import { bersihkanHtml } from '@/lib/sanitize';
+import { adaIsinya } from '@/lib/utils';
 
 export async function GET(request: Request) {
   try {
@@ -98,7 +100,11 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    if (!body.judul || !body.slug || !body.konten) {
+    // Disaring DULU baru divalidasi: kiriman yang isinya cuma "<script>"
+    // akan jadi string kosong setelah disaring, dan itu memang harus ditolak.
+    const konten = bersihkanHtml(body.konten || '');
+
+    if (!body.judul || !body.slug || !adaIsinya(konten)) {
       return NextResponse.json({ success: false, message: 'Data tidak lengkap (judul, slug, konten wajib diisi)' }, { status: 400 });
     }
 
@@ -106,7 +112,7 @@ export async function POST(request: Request) {
 
     const result = await sql`
       INSERT INTO berita (judul, slug, konten, gambar, status, penulis_id)
-      VALUES (${body.judul}, ${body.slug}, ${body.konten}, ${body.gambar || null}, ${body.status || 'draft'}, ${penulisId})
+      VALUES (${body.judul}, ${body.slug}, ${konten}, ${body.gambar || null}, ${body.status || 'draft'}, ${penulisId})
       RETURNING id, judul, slug, gambar, status, created_at
     `;
 
