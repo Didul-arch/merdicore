@@ -5,6 +5,9 @@ import { getLatestBerita, getAllUmkm } from '@/lib/fetchers';
 import { formatDate } from '@/lib/utils';
 import HeroAnimated from '@/components/home/HeroAnimated';
 
+// Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
+export const revalidate = 60;
+
 export default async function Page() {
   const [latestNews, featuredProducts] = await Promise.all([
     getLatestBerita(3),

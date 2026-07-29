@@ -6,32 +6,6 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// GET: Ambil satu user berdasarkan ID
-export async function GET(request: Request, context: RouteContext) {
-  try {
-    const session = await requireRole(['super_admin']);
-    if (!session) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { id } = await context.params;
-    const userId = parseInt(id);
-
-    const users = await sql`SELECT id, nama, email, role, created_at FROM users WHERE id = ${userId}`;
-    const user = users[0];
-
-    if (!user) {
-      return NextResponse.json({ success: false, message: 'User tidak ditemukan' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: user }, { status: 200 });
-
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Gagal mengambil data' }, { status: 500 });
-  }
-}
-
 // PUT: Update data user (nama, role)
 export async function PUT(request: Request, context: RouteContext) {
   try {

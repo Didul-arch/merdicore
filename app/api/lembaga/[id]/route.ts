@@ -6,30 +6,6 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// GET: Ambil satu lembaga
-export async function GET(request: Request, context: RouteContext) {
-  try {
-    const { id } = await context.params;
-    const lembagaId = parseInt(id);
-
-    const rows = await sql`
-      SELECT *
-      FROM lembaga
-      WHERE id = ${lembagaId}
-    `;
-
-    if (rows.length === 0) {
-      return NextResponse.json({ success: false, message: 'Data tidak ditemukan' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: rows[0] }, { status: 200 });
-
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Gagal mengambil data' }, { status: 500 });
-  }
-}
-
 // PUT: Update lembaga
 export async function PUT(request: Request, context: RouteContext) {
   try {

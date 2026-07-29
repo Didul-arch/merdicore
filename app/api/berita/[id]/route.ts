@@ -6,31 +6,6 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// GET: Ambil satu berita berdasarkan ID
-export async function GET(request: Request, context: RouteContext) {
-  try {
-    const { id } = await context.params;
-    const beritaId = parseInt(id);
-
-    const rows = await sql`
-      SELECT b.*, u.nama AS penulis_nama
-      FROM berita b
-      LEFT JOIN users u ON b.penulis_id = u.id
-      WHERE b.id = ${beritaId}
-    `;
-
-    if (rows.length === 0) {
-      return NextResponse.json({ success: false, message: 'Berita tidak ditemukan' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: rows[0] }, { status: 200 });
-
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Gagal mengambil data' }, { status: 500 });
-  }
-}
-
 // PUT: Update berita
 export async function PUT(request: Request, context: RouteContext) {
   try {
@@ -101,30 +76,5 @@ export async function DELETE(request: Request, context: RouteContext) {
   } catch (error) {
     console.error(error);
     return NextResponse.json({ success: false, message: 'Gagal menghapus berita' }, { status: 500 });
-  }
-}
-
-// PATCH: Increment views (public — no auth needed)
-export async function PATCH(request: Request, context: RouteContext) {
-  try {
-    const { id } = await context.params;
-    const beritaId = parseInt(id);
-
-    const result = await sql`
-      UPDATE berita
-      SET views = views + 1
-      WHERE id = ${beritaId}
-      RETURNING id, views
-    `;
-
-    if (result.length === 0) {
-      return NextResponse.json({ success: false, message: 'Berita tidak ditemukan' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: result[0] }, { status: 200 });
-
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Gagal mengupdate views' }, { status: 500 });
   }
 }

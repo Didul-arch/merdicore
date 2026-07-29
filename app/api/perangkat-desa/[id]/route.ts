@@ -6,31 +6,6 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// GET: Ambil satu perangkat desa
-export async function GET(request: Request, context: RouteContext) {
-  try {
-    const { id } = await context.params;
-    const pdId = parseInt(id);
-
-    const rows = await sql`
-      SELECT pd.*, u.nama AS nama_user, u.email AS email_user
-      FROM perangkat_desa pd
-      LEFT JOIN users u ON pd.user_id = u.id
-      WHERE pd.id = ${pdId}
-    `;
-
-    if (rows.length === 0) {
-      return NextResponse.json({ success: false, message: 'Data tidak ditemukan' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: rows[0] }, { status: 200 });
-
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Gagal mengambil data' }, { status: 500 });
-  }
-}
-
 // PUT: Update perangkat desa
 export async function PUT(request: Request, context: RouteContext) {
   try {

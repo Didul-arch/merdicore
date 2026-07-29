@@ -2,6 +2,9 @@ import { Users2 } from 'lucide-react';
 import { getAllLembaga } from '@/lib/fetchers';
 import LembagaTabs from '@/components/lembaga/LembagaTabs';
 
+// Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
+export const revalidate = 60;
+
 export default async function LembagaPage() {
   const lembagaList = await getAllLembaga();
 

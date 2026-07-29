@@ -6,31 +6,6 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// GET: Ambil satu UMKM berdasarkan ID
-export async function GET(request: Request, context: RouteContext) {
-  try {
-    const { id } = await context.params;
-    const umkmId = parseInt(id);
-
-    const rows = await sql`
-      SELECT um.*, u.nama AS pemilik_nama
-      FROM umkm um
-      LEFT JOIN users u ON um.pemilik_id = u.id
-      WHERE um.id = ${umkmId}
-    `;
-
-    if (rows.length === 0) {
-      return NextResponse.json({ success: false, message: 'UMKM tidak ditemukan' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: rows[0] }, { status: 200 });
-
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Gagal mengambil data' }, { status: 500 });
-  }
-}
-
 // PUT: Update UMKM
 export async function PUT(request: Request, context: RouteContext) {
   try {

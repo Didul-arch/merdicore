@@ -5,7 +5,16 @@ import sql from "@/lib/db";
 
 import LogoutButton from "./LogoutButton";
 import Link from "next/link";
-import { Users, FileText, ShoppingBag, MessageSquare, ShieldAlert, UserPlus, CheckCircle2, Clock, Building2, ChevronRight, ShieldCheck } from "lucide-react";
+import { Users, FileText, ShoppingBag, MessageSquare, ShieldAlert, ShieldCheck } from "lucide-react";
+
+interface RecentPesan {
+  id: number;
+  nama_pengirim: string;
+  email: string;
+  isi_pesan: string;
+  status: string;
+  created_at: string;
+}
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -52,7 +61,7 @@ export default async function DashboardPage() {
     totalBerita: 0,
     totalUmkm: 0,
     totalPesan: 0,
-    recentPesan: [] as Array<{ id: number; nama_pengirim: string; email: string; isi_pesan: string; status: string; created_at: string }>,
+    recentPesan: [] as RecentPesan[],
   };
 
   try {
@@ -69,7 +78,7 @@ export default async function DashboardPage() {
       totalBerita: resBerita[0]?.count ?? 0,
       totalUmkm: resUmkm[0]?.count ?? 0,
       totalPesan: resPesan[0]?.count ?? 0,
-      recentPesan: recent as any,
+      recentPesan: recent as unknown as RecentPesan[],
     };
   } catch (err) {
     console.error("Failed to load dashboard stats", err);
@@ -188,7 +197,7 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 text-xs">
-                {recentPesan.map((p: any) => (
+                {recentPesan.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-3 px-2 text-gray-400 font-mono">
                       {new Date(p.created_at).toLocaleDateString('id-ID')}

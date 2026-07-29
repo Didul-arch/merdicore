@@ -116,15 +116,60 @@ Ngurangin bloat: dead code, dependency yang gak kepake, dan duplikasi — sambil
 
 ---
 
-## Fase 3: Rapikan Backend API (versi ringan)
-**Fokus:** SQL mentah di `route.ts` memang berantakan (14 file, rata-rata ~115 baris), tapi solusi "service layer + validation layer" penuh nambah banyak file baru untuk solo dev. Ambil yang perlu aja.
+## Fase 3: Rapikan Backend API (versi ringan) — ✅ SELESAI
+**Fokus:** SQL mentah di `route.ts` memang berantakan, tapi solusi "service layer + validation layer" penuh nambah banyak file baru untuk solo dev. Ambil yang perlu aja — dan ternyata gak perlu keduanya.
 
 * **Modul:** `api/berita`, `api/umkm`, `api/users`, `api/lembaga`, `api/perangkat-desa`, `api/pesan`.
-* **Implementasi (skala kecil dulu):**
-  * Kalau ada query yang literally sama persis di beberapa `route.ts` (misal pola pagination/filter) → tarik jadi 1 helper di `lib/db-helpers.ts`. Jangan bikin 1 file service per modul kalau isinya cuma 1-2 fungsi.
-  * Validasi input: cukup di endpoint yang nerima data dari publik tanpa auth (`pesan` — form kontak warga). Endpoint dashboard yang udah di-guard auth + dipakai form terkontrol sendiri, risikonya jauh lebih rendah — validasi Zod di situ opsional, bukan wajib.
-* **Kalau nanti beneran butuh Zod:** install cuma untuk skema yang dipakai, gak usah generate skema buat semua 6 modul sekaligus di awal.
-* **Estimasi Effort:** Menengah, tapi bisa dicicil per endpoint yang paling bermasalah dulu (mulai dari `pesan`, karena itu yang nerima input publik).
-* **Risiko Regresi:** Merusak response format (`success`, `data`, `pagination`) yang bisa membuat tabel dashboard pecah.
-* **Mitigasi (Bertahap):** Refactor 1 endpoint utuh (`pesan` dulu), tes menyeluruh di UI. Kalau aman, baru lanjut endpoint lain — dan cuma kalau memang masih kerasa berantakan setelah Fase 2 selesai.
-* **Kriteria Selesai:** Gak ada lagi query yang copy-paste identik di >1 `route.ts`. Endpoint publik (`pesan`) tervalidasi.
+* **Dilakukan:**
+  1. Parsing pagination (`page`/`limit`/`offset`) yang copy-paste identik di 6 `route.ts` → 1 helper `parsePagination()` di `lib/pagination.ts`. **Gak jadi bikin service layer per modul** — cukup 1 helper kecil, bukti lagi kalau layer arsitektur penuh emang gak dibutuhin buat scale sekecil ini.
+  2. `POST /api/pesan` (satu-satunya endpoint publik tanpa auth) divalidasi manual: trim, cek panjang sesuai limit kolom DB (`nama_pengirim` maks 150, `email` maks 255, `no_hp` maks 20, `isi_pesan` maks 1000) — **gak install Zod**, cukup 4 `if` biasa buat 1 endpoint.
+  3. Bonus, ketemu pas lint audit ulang: `no-explicit-any` (5 `catch (error: any)` di `berita`, `perangkat-desa`, `users`, `upload`) → `error instanceof Error`/narrowing manual. `prefer-const` di `pesan/route.ts` (`let data`/`let countResult` gak pernah di-reassign). 4 `@ts-ignore` di config NextAuth ternyata juga udah gak perlu (session/token role udah ke-type) — dihapus, persis temuan yang sama kayak Fase 0.5.
+* **Hasil:** `tsc --noEmit` nol error, `eslint` nol error di seluruh `app/api/*` (sisa cuma warning `<img>` di 4 halaman dashboard yang emang udah sengaja di-skip). `next build` sukses.
+* **Kriteria Selesai:** ✅ Gak ada lagi query yang copy-paste identik di >1 `route.ts`. Endpoint publik (`pesan`) tervalidasi.
+
+---
+
+## Fase 4: Data Basi, Font, & Endpoint Mati — ✅ SELESAI
+**Fokus:** Ketemu pas ngecek "apa masih ada yang bisa dikencengin". Yang pertama sebenernya **bug**, bukan cuma soal kecepatan.
+
+* **Bug — Data publik beku sejak `next build` → DIPERBAIKI:**
+  5 halaman publik yang query DB (`/`, `/berita`, `/umkm`, `/tentang`, `/lembaga`) semuanya `○ Static` di build output, dan **gak ada satupun `export const revalidate` di seluruh project**. Artinya data di-query sekali pas build lalu dibekukan — admin publish berita baru, halaman publik gak akan pernah nampilin sampai situs di-build & deploy ulang. Kelas bug yang sama kayak Fase 0.9: fiturnya keliatan jalan, aslinya nggak.
+  **Dilakukan:** `export const revalidate = 60` di 5 halaman itu (ISR). Halaman tetap dilayani dari cache statis (kenceng), cuma di-regenerate di background tiap 60 detik — jauh lebih ringan daripada `dynamic = 'force-dynamic'` yang query DB tiap request. Terbukti di build output: kolom `Revalidate` sekarang `1m` di kelima halaman.
+* **Perf — Font Google `@import` → `next/font`:**
+  `app/globals.css` baris 1 tadinya `@import url('https://fonts.googleapis.com/...')` — render-blocking + chained waterfall (download `globals.css` → parse → baru nemu URL font → baru download font), plus koneksi ke 2 domain eksternal, narik 9 weight Inter.
+  **Dilakukan:** pindah ke `next/font/google` di `app/layout.tsx` (self-hosted pas build, nol request eksternal buat pengunjung), pakai variable font (tanpa `weight` = 1 file buat semua ketebalan). `globals.css` `@theme` sekarang nunjuk ke CSS variable yang di-inject `next/font`.
+  ⚠️ **Catatan penting:** `next/font/google` **download font pas build**, jadi mesin/CI yang nge-build butuh akses internet ke `fonts.gstatic.com`. Di sandbox tempat ini dikerjain jaringannya gak stabil → build sempat gagal 1 dari 3 percobaan (murni network, bukan kode). Di Vercel/mesin normal aman. Kalau suatu saat build gagal dengan error `next/font ... Error while requesting resource`, itu penyebabnya — ulangi build, atau kalau lingkungan build-nya emang gak boleh keluar internet, balikin ke `@import` CSS.
+* **Cleanup — 7 handler API mati dihapus:**
+  Dicek satu-satu: dashboard cuma manggil `PUT` + `DELETE` di route `[id]`. Yang gak pernah dipanggil dari manapun → dihapus: `GET` di 6 route `[id]` (`berita`, `umkm`, `lembaga`, `perangkat-desa`, `users`, `pesan`) + `PATCH` di `berita/[id]` (increment views — halaman detail publik ternyata pakai `incrementBeritaViews()` dari `fetchers.ts` langsung, bukan lewat API).
+* **Cleanup — sisa lint:** `any` + 5 import gak kepake di `app/dashboard/page.tsx` (satu-satunya halaman dashboard yang belum kesentuh Fase 2), `ChevronDown` di `Header.tsx`, `eslint-disable` mubazir di `lib/db.ts`, `NextAuth` import gak kepake di `types/next-auth.d.ts`.
+* **Hasil:** `tsc --noEmit` nol error. `eslint` **nol error** di seluruh project (dari 12 error sebelum fase ini) — sisa 6 warning, semuanya `<img>` dashboard yang emang sengaja ditunda.
+* **Kriteria Selesai:** ✅ Kolom `Revalidate: 1m` muncul di 5 halaman publik. `grep "fonts.googleapis"` di `globals.css` nol hasil. Semua route `[id]` cuma nyisain `PUT DELETE`.
+
+---
+
+## Sengaja TIDAK Dikerjakan (biar gak lupa alasannya)
+
+* **Index database.** Cuma ada 1 index (`berita(views DESC)` — ironisnya kolom yang gak pernah dipakai buat sorting), dan `ORDER BY created_at` / `ILIKE` search emang gak ter-index. **Sengaja gak ditambah:** di skala web desa (puluhan–ratusan baris), Postgres nge-scan 100 baris lebih cepat daripada muter lewat index. Tambahin nanti kalau data udah ribuan DAN beneran kerasa lambat — jangan sekarang.
+* **4 `<img>` sisa di dashboard admin + unused imports.** Admin-only, gak ngaruh ke kecepatan yang dirasain pengunjung. Cosmetic.
+* **`<CrudTable>`/`<CrudModal>` generik.** Field tiap modul beda-beda cukup jauh; dipaksain malah nambah kompleksitas (lihat catatan Fase 2).
+* **Zod.** Cuma 1 endpoint publik tanpa auth (`POST /api/pesan`), udah cukup divalidasi 4 baris `if`. Nambah dependency buat itu doang = mubazir.
+
+---
+
+## Catatan Arsitektur: Kenapa ada 2 cara ambil data?
+
+Ini sering bikin bingung, jadi dicatat di sini biar jelas. **Aturan intinya cuma satu: browser TIDAK BOLEH connect langsung ke database** (password DB bakal keliatan publik). Jadi caranya beda tergantung kodenya jalan di mana.
+
+| | Halaman publik | Dashboard admin |
+|---|---|---|
+| Contoh | `/`, `/berita`, `/umkm`, `/tentang`, `/lembaga` | `/dashboard/*` |
+| Ada `"use client"`? | ❌ Tidak → **Server Component** | ✅ Ya → **Client Component** |
+| Kodenya jalan di | Server | Browser pengunjung |
+| Ambil data lewat | `lib/fetchers.ts` → SQL langsung | `useSWR` → `fetch('/api/...')` → `route.ts` → SQL |
+| Jumlah lompatan | 1 (server → DB) | 2 (browser → server → DB) |
+
+**Jadi `lib/fetchers.ts` itu BUKAN "raw SQL dari frontend".** File itu cuma diimport Server Component — kodenya gak pernah ikut terkirim ke browser, jadi SQL & kredensial DB aman. Makanya di atas file itu ada komentar *"JANGAN import file ini di Client Components"*.
+
+Kenapa dashboard gak ikut pola Server Component? Karena dia butuh interaktif (modal, form, search real-time, tombol hapus) — itu semua wajib jalan di browser. Dan begitu kode jalan di browser, satu-satunya jalan ke DB ya lewat API route.
+
+**Yang justru salah** (dan alhamdulillah gak ada di project ini): Server Component yang manggil `fetch('/api/...')` ke API-nya sendiri. Itu buang-buang 1 lompatan network — mending query langsung.

@@ -1,6 +1,9 @@
 import { getLatestBerita } from '@/lib/fetchers';
 import BeritaSearchableList from '@/components/berita/BeritaSearchableList';
 
+// Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
+export const revalidate = 60;
+
 export default async function BeritaPage() {
   const beritaList = await getLatestBerita(50);
 

@@ -3,6 +3,9 @@ import { Eye, BookOpen, Landmark, Users } from 'lucide-react';
 import { getAllPerangkatDesa } from '@/lib/fetchers';
 import OfficialCard from '@/components/tentang/OfficialCard';
 
+// Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
+export const revalidate = 60;
+
 const MISSIONS = [
   'Meningkatkan profesionalisme aparatur pemerintah desa demi mewujudkan pelayanan yang prima, bersih, dan berwibawa.',
   'Membangun infrastruktur desa yang merata, berkualitas tinggi, serta berwawasan lingkungan secara berkesinambungan.',

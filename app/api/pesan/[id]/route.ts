@@ -6,35 +6,6 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// GET: Ambil satu pesan (Admin Only)
-export async function GET(request: Request, context: RouteContext) {
-  try {
-    const session = await requireRole(ADMIN_ROLES);
-    if (!session) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { id } = await context.params;
-    const pesanId = parseInt(id);
-
-    const rows = await sql`
-      SELECT *
-      FROM pesan
-      WHERE id = ${pesanId}
-    `;
-
-    if (rows.length === 0) {
-      return NextResponse.json({ success: false, message: 'Pesan tidak ditemukan' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: rows[0] }, { status: 200 });
-
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Gagal mengambil data' }, { status: 500 });
-  }
-}
-
 // PUT: Update status pesan (Admin Only)
 export async function PUT(request: Request, context: RouteContext) {
   try {
