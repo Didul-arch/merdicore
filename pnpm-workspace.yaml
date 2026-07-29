@@ -1,6 +1,7 @@
 allowBuilds:
-  sharp: false
   unrs-resolver: false
 ignoredBuiltDependencies:
-  - sharp
   - unrs-resolver
+# sharp sengaja dikeluarkan dari daftar ignore: dia dipakai app/api/upload
+# buat kompres gambar. Binary-nya prebuilt (@img/sharp-linux-x64), jadi
+# nggak butuh compile — aman dibiarkan jalan.
