@@ -1,14 +1,19 @@
 /**
- * Hapus file di Supabase Storage yang udah gak dipakai database.
+ * Jaring pengaman: hapus file di Supabase Storage yang sudah tidak dipakai.
  *
- * Kenapa perlu: tombol "X" di dashboard cuma ngapus URL dari DB, file di
- * storage-nya ketinggalan. Lama-lama numpuk.
+ * Normalnya ini TIDAK menemukan apa-apa. API sudah menghapus file secara
+ * otomatis begitu gambar dilepas dari data (lihat lib/storage.ts) — baik saat
+ * mengubah maupun menghapus berita/UMKM/lembaga/perangkat/user.
+ *
+ * Yang masih bisa lolos cuma satu kasus: admin mengunggah gambar lalu
+ * MEMBATALKAN formnya. File terlanjur naik, tapi tidak pernah tercatat di
+ * database. Script inilah yang menyapunya.
  *
  * Cara pakai:
  *   pnpm cleanup-storage            -> cuma NAMPILIN apa yang bakal dihapus
  *   pnpm cleanup-storage --delete   -> beneran hapus
  *
- * Aman: file yang masih dipakai DB gak akan kesentuh, karena dicek dulu.
+ * Aman: file yang masih dipakai DB tidak akan kesentuh, karena dicek dulu.
  */
 const { S3Client, ListObjectsV2Command, DeleteObjectsCommand } = require('@aws-sdk/client-s3');
 const postgres = require('postgres');
@@ -46,17 +51,26 @@ async function main() {
   } while (token);
 
   // 2. Semua file yang MASIH DIPAKAI menurut database
-  const [berita, umkm, perangkat] = await Promise.all([
-    sql`SELECT gambar FROM berita WHERE gambar IS NOT NULL`,
+  const [berita, umkm, perangkat, lembaga] = await Promise.all([
+    sql`SELECT gambar, konten FROM berita`,
     sql`SELECT gambar, galeri_foto FROM umkm`,
     sql`SELECT foto FROM perangkat_desa WHERE foto IS NOT NULL`,
+    sql`SELECT gambar, deskripsi FROM lembaga`,
   ]);
 
   const used = new Set();
   const mark = (v) => { const k = toKey(v); if (k) used.add(k); };
-  berita.forEach((r) => mark(r.gambar));
+
+  // Gambar yang disisipkan lewat editor teks kaya nempel DI DALAM HTML, bukan
+  // di kolom tersendiri. Tanpa penyisiran ini, semuanya dikira nyangkut lalu
+  // ikut terhapus — kehilangan data yang senyap.
+  const markTeks = (teks) =>
+    (String(teks || '').match(/[^"'\s<>()]+\/public-assets\/[^"'\s<>()]+/g) || []).forEach(mark);
+
+  berita.forEach((r) => { mark(r.gambar); markTeks(r.konten); });
   umkm.forEach((r) => { mark(r.gambar); (r.galeri_foto || []).forEach(mark); });
   perangkat.forEach((r) => mark(r.foto));
+  lembaga.forEach((r) => { mark(r.gambar); markTeks(r.deskripsi); });
 
   // 3. Sisanya = nyangkut. Penanda folder bawaan Supabase jangan disentuh.
   const orphans = files.filter(

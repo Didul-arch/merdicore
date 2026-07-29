@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Users, Shield, Users2 } from 'lucide-react';
 import type { LembagaItem } from '@/lib/types';
+import { keHtml } from '@/lib/utils';
 
 interface Props {
   lembagaList: LembagaItem[];
@@ -59,9 +60,15 @@ export default function LembagaTabs({ lembagaList }: Props) {
             <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900">{activeData.nama_lengkap}</h3>
           </div>
           <div className="h-0.5 w-16 bg-teal-600 rounded" />
-          <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
-            {activeData.deskripsi || 'Belum ada deskripsi untuk lembaga ini.'}
-          </p>
+          {/* WAJIB <div>, bukan <p>: isi dari editor berisi <p> sendiri, dan
+              <p> di dalam <p> itu HTML tidak sah — browser akan menutup paksa
+              tag-nya saat hydration dan React melempar error ketidakcocokan. */}
+          <div
+            className="prose prose-sm prose-teal max-w-none text-gray-600"
+            dangerouslySetInnerHTML={{
+              __html: keHtml(activeData.deskripsi) || '<p>Belum ada deskripsi untuk lembaga ini.</p>',
+            }}
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-gray-150/50">
             <div className="space-y-1">

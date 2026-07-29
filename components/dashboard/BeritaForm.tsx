@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/dashboard/Toast";
 import FormPage from "@/components/dashboard/FormPage";
-import { Field, TextInput, TextArea, Select, FileInput } from "@/components/dashboard/Field";
+import { Field, TextInput, Select, FileInput } from "@/components/dashboard/Field";
+import RichEditor from "@/components/dashboard/RichEditor";
 import { uploadImage } from "@/lib/upload-image";
+import { adaIsinya, keHtml, teksPolos } from "@/lib/utils";
 
 export interface BeritaAwal {
   id?: number;
@@ -33,7 +35,7 @@ export default function BeritaForm({ awal = KOSONG }: { awal?: BeritaAwal }) {
 
   const [judul, setJudul] = useState(awal.judul);
   const [slug, setSlug] = useState(awal.slug);
-  const [konten, setKonten] = useState(awal.konten);
+  const [konten, setKonten] = useState(keHtml(awal.konten));
   const [gambar, setGambar] = useState(awal.gambar ?? "");
   const [status, setStatus] = useState(awal.status);
   const [file, setFile] = useState<File | null>(null);
@@ -43,6 +45,15 @@ export default function BeritaForm({ awal = KOSONG }: { awal?: BeritaAwal }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // contenteditable tidak bisa memakai atribut `required` bawaan HTML,
+    // jadi dicek manual. Harus SEBELUM setSubmitting — kalau sesudahnya,
+    // tombol simpan terkunci selamanya saat validasi gagal.
+    if (!adaIsinya(konten)) {
+      setToast({ message: "Isi berita tidak boleh kosong", type: "error" });
+      return;
+    }
+
     setSubmitting(true);
     try {
       let imageUrl = gambar;
@@ -100,8 +111,13 @@ export default function BeritaForm({ awal = KOSONG }: { awal?: BeritaAwal }) {
           <TextInput required value={slug} onChange={(e) => setSlug(e.target.value)} className="font-mono" />
         </Field>
 
-        <Field label="Isi Berita" wajib petunjuk={`${konten.length} karakter`}>
-          <TextArea required rows={16} value={konten} onChange={(e) => setKonten(e.target.value)} placeholder="Tulis isi beritanya di sini..." />
+        <Field label="Isi Berita" wajib petunjuk={`${teksPolos(konten).length} karakter`}>
+          <RichEditor
+            isiAwal={keHtml(awal.konten)}
+            onChange={setKonten}
+            folder="berita"
+            onError={(m) => setToast({ message: m, type: "error" })}
+          />
         </Field>
 
         <Field label="Gambar Sampul" petunjuk="Otomatis diperkecil dan dikompres saat diunggah.">

@@ -1,24 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { unggah, urlPublik } from '@/lib/storage';
 import sharp from 'sharp';
-
-const endpoint = process.env.PUBLIC_BUCKET_ENDPOINT || '';
-const region = 'auto';
-const accessKeyId = process.env.S3_ACCESS_KEY_ID || '';
-const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY || '';
-
-const s3Client = new S3Client({
-  forcePathStyle: true,
-  region,
-  endpoint,
-  credentials: {
-    accessKeyId,
-    secretAccessKey,
-  },
-});
-
-const BUCKET = 'public-assets';
 
 const ALLOWED_FOLDERS = ['berita', 'umkm', 'avatar', 'umkm/galeri'] as const;
 type Folder = typeof ALLOWED_FOLDERS[number];
@@ -114,25 +97,14 @@ export async function POST(request: Request) {
     const randomStr = Math.random().toString(36).substring(2, 8);
     const fileName = `${folder}/${timestamp}-${randomStr}.${ext}`;
 
-    const command = new PutObjectCommand({
-      Bucket: BUCKET,
-      Key: fileName,
-      Body: body,
-      ContentType: contentType,
-    });
-
-    await s3Client.send(command);
-
-    // Host untuk S3 API beda dengan host URL publik, jadi perlu ditukar.
-    const baseUrl = endpoint.replace('.storage.supabase.co/storage/v1/s3', '.supabase.co');
-    const publicUrl = `${baseUrl}/storage/v1/object/public/${BUCKET}/${fileName}`;
+    await unggah(fileName, body, contentType);
 
     return NextResponse.json({
       success: true,
       message: 'Gambar berhasil diupload via S3',
       data: {
         path: fileName,
-        url: publicUrl,
+        url: urlPublik(fileName),
       },
     }, { status: 201 });
 

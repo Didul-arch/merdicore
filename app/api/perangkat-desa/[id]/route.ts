@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
+import { hapusGambar, hapusGambarYangDilepas, kumpulkanGambar } from '@/lib/storage';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -21,6 +22,8 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ success: false, message: 'Jabatan wajib diisi' }, { status: 400 });
     }
 
+    const sebelum = await sql`SELECT foto FROM perangkat_desa WHERE id = ${pdId}`;
+
     const result = await sql`
       UPDATE perangkat_desa
       SET jabatan = ${body.jabatan},
@@ -35,6 +38,8 @@ export async function PUT(request: Request, context: RouteContext) {
     if (result.length === 0) {
       return NextResponse.json({ success: false, message: 'Data tidak ditemukan' }, { status: 404 });
     }
+
+    await hapusGambarYangDilepas([sebelum[0]?.foto as string], [body.foto]);
 
     return NextResponse.json({
       success: true,
@@ -58,16 +63,21 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const pdId = parseInt(id);
 
-    const result = await sql`DELETE FROM perangkat_desa WHERE id = ${pdId} RETURNING id, jabatan`;
+    const result = await sql`
+      DELETE FROM perangkat_desa WHERE id = ${pdId}
+      RETURNING id, jabatan, foto
+    `;
 
     if (result.length === 0) {
       return NextResponse.json({ success: false, message: 'Data tidak ditemukan' }, { status: 404 });
     }
 
+    await hapusGambar(kumpulkanGambar(result[0].foto as string));
+
     return NextResponse.json({
       success: true,
       message: 'Perangkat desa berhasil dihapus',
-      data: result[0],
+      data: { id: result[0].id, jabatan: result[0].jabatan },
     }, { status: 200 });
 
   } catch (error) {

@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/dashboard/Toast";
 import FormPage from "@/components/dashboard/FormPage";
-import { Field, TextInput, TextArea, FileInput } from "@/components/dashboard/Field";
+import { Field, TextInput, FileInput } from "@/components/dashboard/Field";
+import RichEditor from "@/components/dashboard/RichEditor";
 import { uploadImage } from "@/lib/upload-image";
+import { keHtml, teksPolos } from "@/lib/utils";
 
 export interface LembagaAwal {
   id?: number;
@@ -29,7 +31,7 @@ export default function LembagaForm({ awal = KOSONG }: { awal?: LembagaAwal }) {
   const [singkatan, setSingkatan] = useState(awal.singkatan ?? "");
   const [namaKetua, setNamaKetua] = useState(awal.nama_ketua ?? "");
   const [jumlahAnggota, setJumlahAnggota] = useState<number | "">(awal.jumlah_anggota || "");
-  const [deskripsi, setDeskripsi] = useState(awal.deskripsi ?? "");
+  const [deskripsi, setDeskripsi] = useState(keHtml(awal.deskripsi));
   const [gambar, setGambar] = useState(awal.gambar ?? "");
   const [file, setFile] = useState<File | null>(null);
 
@@ -106,8 +108,13 @@ export default function LembagaForm({ awal = KOSONG }: { awal?: LembagaAwal }) {
           </Field>
         </div>
 
-        <Field label="Deskripsi" petunjuk={`${deskripsi.length} karakter — tampil di halaman publik Lembaga Desa.`}>
-          <TextArea rows={8} value={deskripsi} onChange={(e) => setDeskripsi(e.target.value)} placeholder="Penjelasan mengenai lembaga ini..." />
+        <Field label="Deskripsi" petunjuk={`${teksPolos(deskripsi).length} karakter — tampil di halaman publik Lembaga Desa.`}>
+          <RichEditor
+            isiAwal={keHtml(awal.deskripsi)}
+            onChange={setDeskripsi}
+            folder="umkm"
+            onError={(m) => setToast({ message: m, type: "error" })}
+          />
         </Field>
 
         <Field label="Logo / Gambar" petunjuk="Otomatis diperkecil dan dikompres saat diunggah.">

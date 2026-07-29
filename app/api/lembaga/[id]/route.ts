@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
+import { hapusGambar, hapusGambarYangDilepas, kumpulkanGambar } from '@/lib/storage';
+import { bersihkanHtml } from '@/lib/sanitize';
+import { adaIsinya } from '@/lib/utils';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -38,9 +41,14 @@ export async function PUT(request: Request, context: RouteContext) {
     const lembagaId = parseInt(id);
     const body = await request.json();
 
+    const deskripsiBersih = bersihkanHtml(body.deskripsi || '');
+    const deskripsi = adaIsinya(deskripsiBersih) ? deskripsiBersih : null;
+
     if (!body.nama_lengkap) {
       return NextResponse.json({ success: false, message: 'Nama lengkap wajib diisi' }, { status: 400 });
     }
+
+    const sebelum = await sql`SELECT gambar, deskripsi FROM lembaga WHERE id = ${lembagaId}`;
 
     const result = await sql`
       UPDATE lembaga
@@ -48,7 +56,7 @@ export async function PUT(request: Request, context: RouteContext) {
           singkatan = ${body.singkatan || null},
           nama_ketua = ${body.nama_ketua || null},
           jumlah_anggota = ${body.jumlah_anggota || 0},
-          deskripsi = ${body.deskripsi || null},
+          deskripsi = ${deskripsi},
           gambar = ${body.gambar || null}
       WHERE id = ${lembagaId}
       RETURNING *
@@ -57,6 +65,11 @@ export async function PUT(request: Request, context: RouteContext) {
     if (result.length === 0) {
       return NextResponse.json({ success: false, message: 'Data tidak ditemukan' }, { status: 404 });
     }
+
+    await hapusGambarYangDilepas(
+      [sebelum[0]?.gambar as string, sebelum[0]?.deskripsi as string],
+      [body.gambar, deskripsi],
+    );
 
     return NextResponse.json({
       success: true,
@@ -80,16 +93,21 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const lembagaId = parseInt(id);
 
-    const result = await sql`DELETE FROM lembaga WHERE id = ${lembagaId} RETURNING id, nama_lengkap`;
+    const result = await sql`
+      DELETE FROM lembaga WHERE id = ${lembagaId}
+      RETURNING id, nama_lengkap, gambar, deskripsi
+    `;
 
     if (result.length === 0) {
       return NextResponse.json({ success: false, message: 'Data tidak ditemukan' }, { status: 404 });
     }
 
+    await hapusGambar(kumpulkanGambar(result[0].gambar as string, result[0].deskripsi as string));
+
     return NextResponse.json({
       success: true,
       message: 'Lembaga berhasil dihapus',
-      data: result[0],
+      data: { id: result[0].id, nama_lengkap: result[0].nama_lengkap },
     }, { status: 200 });
 
   } catch (error) {

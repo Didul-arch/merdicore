@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight, Eye, Calendar, BookOpen, ShoppingBag, ArrowRight } from 'lucide-react';
 import { getLatestBerita, getAllUmkm } from '@/lib/fetchers';
-import { formatDate } from '@/lib/utils';
+import { formatDate, teksPolos } from '@/lib/utils';
 import HeroAnimated from '@/components/home/HeroAnimated';
 
 // Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
@@ -125,7 +125,7 @@ export default async function Page() {
                         {item.judul}
                       </h4>
                       <p className="text-xs text-gray-500 font-light line-clamp-2 leading-relaxed flex-grow">
-                        {(item.konten || '').substring(0, 120)}...
+                        {teksPolos(item.konten).substring(0, 120)}...
                       </p>
                       <div className="pt-3 border-t border-gray-100 flex justify-between items-center text-teal-600 group-hover:text-teal-700 text-xs font-semibold">
                         <span className="flex items-center space-x-1">

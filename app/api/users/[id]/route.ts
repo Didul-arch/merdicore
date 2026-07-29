@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole } from '@/lib/auth';
+import { hapusGambar, kumpulkanGambar } from '@/lib/storage';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -59,11 +60,26 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const userId = parseInt(id);
 
+    // perangkat_desa.user_id dan umkm.pemilik_id dua-duanya ON DELETE CASCADE,
+    // jadi menghapus user diam-diam ikut menghapus baris di kedua tabel itu.
+    // Fotonya dikumpulkan DULU selagi barisnya masih ada.
+    const [pd, um] = await Promise.all([
+      sql`SELECT foto FROM perangkat_desa WHERE user_id = ${userId}`,
+      sql`SELECT gambar, galeri_foto FROM umkm WHERE pemilik_id = ${userId}`,
+    ]);
+
     const result = await sql`DELETE FROM users WHERE id = ${userId} RETURNING id, nama, email, role`;
 
     if (result.length === 0) {
       return NextResponse.json({ success: false, message: 'User tidak ditemukan' }, { status: 404 });
     }
+
+    await hapusGambar(
+      kumpulkanGambar(
+        ...pd.map((r) => r.foto as string),
+        ...um.flatMap((r) => [r.gambar as string, r.galeri_foto as string[]]),
+      ),
+    );
 
     return NextResponse.json({
       success: true,

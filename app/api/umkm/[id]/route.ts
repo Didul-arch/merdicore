@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
+import { hapusGambar, hapusGambarYangDilepas, kumpulkanGambar } from '@/lib/storage';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -48,6 +49,8 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ success: false, message: 'Nama usaha wajib diisi' }, { status: 400 });
     }
 
+    const sebelum = await sql`SELECT gambar, galeri_foto FROM umkm WHERE id = ${umkmId}`;
+
     const result = await sql`
       UPDATE umkm
       SET nama_usaha = ${body.nama_usaha},
@@ -63,6 +66,12 @@ export async function PUT(request: Request, context: RouteContext) {
     if (result.length === 0) {
       return NextResponse.json({ success: false, message: 'UMKM tidak ditemukan' }, { status: 404 });
     }
+
+    // Gambar utama yang diganti + foto galeri yang dibuang, ikut dihapus.
+    await hapusGambarYangDilepas(
+      [sebelum[0]?.gambar as string, sebelum[0]?.galeri_foto as string[]],
+      [body.gambar, body.galeri_foto],
+    );
 
     return NextResponse.json({
       success: true,
@@ -86,16 +95,21 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const umkmId = parseInt(id);
 
-    const result = await sql`DELETE FROM umkm WHERE id = ${umkmId} RETURNING id, nama_usaha`;
+    const result = await sql`
+      DELETE FROM umkm WHERE id = ${umkmId}
+      RETURNING id, nama_usaha, gambar, galeri_foto
+    `;
 
     if (result.length === 0) {
       return NextResponse.json({ success: false, message: 'UMKM tidak ditemukan' }, { status: 404 });
     }
 
+    await hapusGambar(kumpulkanGambar(result[0].gambar as string, result[0].galeri_foto as string[]));
+
     return NextResponse.json({
       success: true,
       message: 'UMKM berhasil dihapus',
-      data: result[0],
+      data: { id: result[0].id, nama_usaha: result[0].nama_usaha },
     }, { status: 200 });
 
   } catch (error) {

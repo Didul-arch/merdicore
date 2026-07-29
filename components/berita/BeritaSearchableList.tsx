@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, Eye, BookOpen, Search } from 'lucide-react';
 import type { BeritaItem } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import { formatDate, teksPolos } from '@/lib/utils';
 
 interface Props {
   initialData: BeritaItem[];
@@ -18,7 +18,7 @@ export default function BeritaSearchableList({ initialData }: Props) {
     const q = searchQuery.toLowerCase();
     return (
       item.judul.toLowerCase().includes(q) ||
-      (item.konten || '').toLowerCase().includes(q) ||
+      teksPolos(item.konten).toLowerCase().includes(q) ||
       (item.penulis_nama || '').toLowerCase().includes(q)
     );
   });
@@ -59,7 +59,7 @@ export default function BeritaSearchableList({ initialData }: Props) {
                     <span>Oleh: {item.penulis_nama || 'Admin'}</span>
                   </div>
                   <h4 className="text-sm sm:text-base font-bold text-gray-900 group-hover:text-teal-600 transition-colors line-clamp-2 leading-snug">{item.judul}</h4>
-                  <p className="text-xs text-gray-500 font-light line-clamp-3 leading-relaxed flex-grow">{(item.konten || '').substring(0, 150)}...</p>
+                  <p className="text-xs text-gray-500 font-light line-clamp-3 leading-relaxed flex-grow">{teksPolos(item.konten).substring(0, 150)}...</p>
                   <div className="pt-3 border-t border-gray-100 flex justify-between items-center text-teal-600 group-hover:text-teal-700 text-xs font-semibold">
                     <span className="flex items-center space-x-1"><BookOpen className="w-3.5 h-3.5" /><span>Baca Selengkapnya</span></span>
                     <span className="flex items-center space-x-1 text-gray-400 font-normal"><Eye className="w-3.5 h-3.5" /><span>{item.views} kali dilihat</span></span>

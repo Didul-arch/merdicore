@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* Menghidupkan kelas `prose` untuk merender konten dari editor teks kaya.
+   Tailwind v4 memuat plugin lewat CSS, bukan file config JS. */
+@plugin "@tailwindcss/typography";
 
 /* Font di-inject next/font/local dari app/layout.tsx — file-nya ada di
    app/fonts/, jadi nol request ke Google (baik saat build maupun saat
