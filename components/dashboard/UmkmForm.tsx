@@ -124,13 +124,15 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
           {galeri.length > 0 && (
             <div className="mt-3 grid grid-cols-3 sm:grid-cols-5 gap-3">
               {galeri.map((url, i) => (
-                <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-50 group">
+                <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt={`Galeri ${i + 1}`} className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => setGaleri((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="absolute top-1 right-1 bg-white/90 rounded-full p-1 text-red-600 opacity-0 group-hover:opacity-100 transition shadow-sm hover:bg-red-50 cursor-pointer"
+                    // Sengaja selalu terlihat, bukan cuma pas hover: di HP gak
+                    // ada hover, jadi tombolnya bakal mustahil ditemukan.
+                    className="absolute top-1 right-1 bg-white rounded-full p-1 text-red-600 border border-gray-200 shadow-sm transition hover:bg-red-50 hover:border-red-200 cursor-pointer"
                     title="Buang foto ini"
                   >
                     <X className="w-3 h-3" />
