@@ -1,9 +1,13 @@
+/* Catatan: sempat dicoba pindah ke next/font (self-hosted, lebih cepat), tapi
+   next/font download font pas build ke fonts.gstatic.com — di jaringan sini
+   sering gagal dan bikin `next build` error. Dibalikin ke @import biar build
+   selalu jalan. Detail + cara nyoba lagi ada di refactor.md (Fase 4). */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* Font di-inject next/font dari app/layout.tsx (self-hosted, bukan CDN Google) */
 @theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-space-grotesk), sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
 }
 
 /* Scrollbar */
