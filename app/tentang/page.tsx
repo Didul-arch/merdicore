@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import Image from 'next/image';
 import { Eye, BookOpen, Landmark, Users } from 'lucide-react';
 import { getAllPerangkatDesa } from '@/lib/fetchers';
 import OfficialCard from '@/components/tentang/OfficialCard';
+import fotoMakamProfil from '@/app/makam-profil.jpg';
+
+export const metadata: Metadata = {
+  title: "Profil Desa",
+  description: "Sejarah, visi misi, dan susunan perangkat Desa Pulung Merdiko, Kecamatan Pulung, Kabupaten Ponorogo.",
+  openGraph: { title: "Profil Desa", description: "Sejarah, visi misi, dan susunan perangkat Desa Pulung Merdiko, Kecamatan Pulung, Kabupaten Ponorogo." },
+};
 
 // Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
 export const revalidate = 60;
@@ -37,12 +45,11 @@ export default async function TentangPage() {
             <div className="absolute -bottom-4 -right-4 w-44 h-44 bg-sky-100 rounded-3xl -z-10" />
             <div className="relative w-full h-80 rounded-2xl overflow-hidden shadow-md border border-gray-150">
               <Image
-                src="https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=800&q=80"
-                alt="Makam Bersejarah"
+                src={fotoMakamProfil}
+                alt="Makam Eyang Raden Tumenggung Djajengrana, cagar budaya Desa Pulung Merdiko"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 className="object-cover"
-                referrerPolicy="no-referrer"
               />
             </div>
           </div>

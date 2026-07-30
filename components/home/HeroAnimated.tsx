@@ -17,16 +17,6 @@ export default function HeroAnimated() {
 
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full text-white">
         <div className="max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center space-x-2 bg-teal-500/20 border border-teal-500/30 text-teal-300 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-6"
-          >
-            <span className="w-2 h-2 bg-teal-400 rounded-full animate-ping"></span>
-            <span>Portal Resmi Kantor Desa</span>
-          </motion.div>
-
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

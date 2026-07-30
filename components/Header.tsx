@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
-import VillageLogo from './VillageLogo';
+// Diimport (bukan ditaruh di public/) supaya Next tahu ukuran aslinya dan
+// memberi nama berkas ber-hash — jadi bisa di-cache selamanya oleh browser.
+import logoPemerintahan from '@/app/logo-pemerintahan.png';
 
 const MENU_ITEMS = [
   { name: 'Beranda', path: '/' },
@@ -44,22 +47,21 @@ export default function Header() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center space-x-3 cursor-pointer"
-          >
-            <div className="w-12 h-12 flex-shrink-0 bg-teal-600/10 rounded-full flex items-center justify-center p-1">
-              <VillageLogo size={40} />
-            </div>
-            <div>
-              <h1 className="text-xs sm:text-sm font-bold text-gray-800 tracking-wider leading-tight">
-                PEMERINTAH DESA PULUNG MERDIKO
-              </h1>
-              <p className="text-[10px] sm:text-xs font-semibold text-sky-600 uppercase tracking-widest leading-none mt-0.5">
-                Kecamatan Pulung • Ponorogo
-              </p>
-            </div>
+          {/* Logo — tulisan "Pemerintah Desa Pulung Merdiko" sudah menyatu di
+              dalam gambarnya, jadi tidak ditulis ulang sebagai teks.
+              Maknanya dibawa oleh atribut alt supaya tetap terbaca mesin
+              pencari dan pembaca layar. */}
+          <Link href="/" className="flex items-center cursor-pointer" aria-label="Beranda">
+            <Image
+              src={logoPemerintahan}
+              alt="Pemerintah Desa Pulung Merdiko — Kecamatan Pulung, Ponorogo"
+              priority
+              // Rasio logo 7:1, tampil setinggi 32px (h-8) di HP dan 40px
+              // (h-10) di layar lebar -> lebarnya 224px dan 280px. Tanpa sizes,
+              // Next mengira gambar selebar layar dan menyiapkan versi 1920px.
+              sizes="(max-width: 640px) 224px, 280px"
+              className="h-8 sm:h-10 w-auto"
+            />
           </Link>
 
           {/* Desktop Nav */}

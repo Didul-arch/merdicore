@@ -1,12 +1,42 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Phone, Building, User, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { getUmkmById } from '@/lib/fetchers';
+import { ringkas } from '@/lib/site';
 import WhatsAppButton from '@/components/umkm/WhatsAppButton';
 import ZoomableImage from '@/components/ZoomableImage';
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const umkm = await getUmkmById(parseInt(id));
+  if (!umkm) return { title: 'UMKM tidak ditemukan' };
+
+  const deskripsi = ringkas(
+    umkm.deskripsi?.trim() ||
+      `${umkm.nama_usaha}${umkm.alamat ? `, ${umkm.alamat}` : ''} — UMKM warga Desa Pulung Merdiko.`,
+  );
+
+  return {
+    title: umkm.nama_usaha,
+    description: deskripsi,
+    openGraph: {
+      type: 'website',
+      title: umkm.nama_usaha,
+      description: deskripsi,
+      images: umkm.gambar ? [umkm.gambar] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: umkm.nama_usaha,
+      description: deskripsi,
+      images: umkm.gambar ? [umkm.gambar] : undefined,
+    },
+  };
 }
 
 export default async function UmkmDetailPage({ params }: Props) {

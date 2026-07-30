@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 import AspirasiForm from '@/components/contact/AspirasiForm';
+
+export const metadata: Metadata = {
+  title: "Kontak & Aspirasi",
+  description: "Alamat kantor, jam pelayanan, dan formulir aspirasi warga Desa Pulung Merdiko.",
+  openGraph: { title: "Kontak & Aspirasi", description: "Alamat kantor, jam pelayanan, dan formulir aspirasi warga Desa Pulung Merdiko." },
+};
 
 export default function ContactPage() {
   return (

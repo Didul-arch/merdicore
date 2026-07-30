@@ -4,6 +4,7 @@ import { ChevronRight, Eye, Calendar, BookOpen, ShoppingBag, ArrowRight } from '
 import { getLatestBerita, getAllUmkm } from '@/lib/fetchers';
 import { formatDate, teksPolos } from '@/lib/utils';
 import HeroAnimated from '@/components/home/HeroAnimated';
+import fotoMakam from '@/app/makam.jpg';
 
 // Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
 export const revalidate = 60;
@@ -27,12 +28,11 @@ export default async function Page() {
               <div className="absolute -bottom-4 -right-4 w-4/5 h-1/2 bg-slate-900 rounded-3xl -z-10" />
               <div className="relative h-[380px] rounded-2xl overflow-hidden shadow-xl border border-gray-100 bg-white">
                 <Image
-                  src="https://images.unsplash.com/photo-1531538606174-0f90ff5dce83?auto=format&fit=crop&w=800&q=80"
-                  alt="Warga Desa"
+                  src={fotoMakam}
+                  alt="Makam Eyang Raden Tumenggung Djajengrana, cagar budaya Desa Pulung Merdiko"
                   fill
                   sizes="(max-width: 1024px) 100vw, 40vw"
                   className="object-cover hover:scale-105 transition-transform duration-500"
-                  referrerPolicy="no-referrer"
                 />
               </div>
             </div>

@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { getAllUmkm } from '@/lib/fetchers';
 import UmkmSearchableList from '@/components/umkm/UmkmSearchableList';
+
+export const metadata: Metadata = {
+  title: "Etalase UMKM",
+  description: "Produk unggulan usaha warga Desa Pulung Merdiko — kerajinan, kuliner, dan hasil tani. Hubungi pemiliknya langsung lewat WhatsApp.",
+  openGraph: { title: "Etalase UMKM", description: "Produk unggulan usaha warga Desa Pulung Merdiko — kerajinan, kuliner, dan hasil tani. Hubungi pemiliknya langsung lewat WhatsApp." },
+};
 
 // Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
 export const revalidate = 60;
