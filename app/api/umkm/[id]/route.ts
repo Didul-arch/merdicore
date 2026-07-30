@@ -17,7 +17,7 @@ export async function GET(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const rows = await sql`
       SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat,
-             um.gambar, um.galeri_foto, um.created_at, u.nama AS pemilik_nama
+             um.gambar, um.gambar_fokus, um.galeri_foto, um.created_at, u.nama AS pemilik_nama
       FROM umkm um
       LEFT JOIN users u ON um.pemilik_id = u.id
       WHERE um.id = ${parseInt(id)}
@@ -58,9 +58,10 @@ export async function PUT(request: Request, context: RouteContext) {
           no_whatsapp = ${body.no_whatsapp || null},
           alamat = ${body.alamat || null},
           gambar = ${body.gambar || null},
+          gambar_fokus = ${body.gambar_fokus || null},
           galeri_foto = ${body.galeri_foto || []}
       WHERE id = ${umkmId}
-      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, galeri_foto, created_at
+      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, created_at
     `;
 
     if (result.length === 0) {

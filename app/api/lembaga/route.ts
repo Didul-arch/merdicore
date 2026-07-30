@@ -73,14 +73,15 @@ export async function POST(request: Request) {
     }
 
     const result = await sql`
-      INSERT INTO lembaga (nama_lengkap, singkatan, nama_ketua, jumlah_anggota, deskripsi, gambar)
+      INSERT INTO lembaga (nama_lengkap, singkatan, nama_ketua, jumlah_anggota, deskripsi, gambar, gambar_fokus)
       VALUES (
-        ${body.nama_lengkap}, 
-        ${body.singkatan || null}, 
-        ${body.nama_ketua || null}, 
-        ${body.jumlah_anggota || 0}, 
-        ${deskripsi}, 
-        ${body.gambar || null}
+        ${body.nama_lengkap},
+        ${body.singkatan || null},
+        ${body.nama_ketua || null},
+        ${body.jumlah_anggota || 0},
+        ${deskripsi},
+        ${body.gambar || null},
+        ${body.gambar_fokus || null}
       )
       RETURNING *
     `;

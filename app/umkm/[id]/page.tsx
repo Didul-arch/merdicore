@@ -77,6 +77,7 @@ export default async function UmkmDetailPage({ params }: Props) {
                   sizes="(max-width: 768px) 100vw, 50vw"
                   priority
                   className="object-cover hover:scale-[1.02] transition-transform duration-500"
+                  objectPosition={product.gambar_fokus || undefined}
                 />
               ) : (
                 <ShoppingBag className="w-24 h-24 text-teal-200" />

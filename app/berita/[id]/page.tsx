@@ -74,6 +74,7 @@ export default async function BeritaDetailPage({ params }: Props) {
                 alt={berita.judul}
                 sizes="(max-width: 768px) 100vw, 896px"
                 priority
+                objectPosition={berita.gambar_fokus || undefined}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-50 to-sky-100">

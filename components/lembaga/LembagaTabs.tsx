@@ -46,6 +46,7 @@ export default function LembagaTabs({ lembagaList }: Props) {
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 className="object-cover"
+                style={{ objectPosition: activeData.gambar_fokus || '50% 50%' }}
                 referrerPolicy="no-referrer"
               />
             ) : (

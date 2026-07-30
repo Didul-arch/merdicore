@@ -60,6 +60,7 @@ export default function UmkmSearchableList({ initialData }: Props) {
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover rounded-2xl group-hover:scale-[1.03] transition-transform duration-500"
+                      style={{ objectPosition: product.gambar_fokus || '50% 50%' }}
                       referrerPolicy="no-referrer"
                     />
                   ) : (

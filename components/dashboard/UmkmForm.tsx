@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import Toast from "@/components/dashboard/Toast";
 import FormPage from "@/components/dashboard/FormPage";
 import { Field, TextInput, TextArea, FileInput } from "@/components/dashboard/Field";
+import ImageUploadField from "@/components/dashboard/ImageUploadField";
 import { uploadImage } from "@/lib/upload-image";
 
 export interface UmkmAwal {
@@ -15,11 +16,12 @@ export interface UmkmAwal {
   no_whatsapp: string | null;
   alamat: string | null;
   gambar: string | null;
+  gambar_fokus: string | null;
   galeri_foto: string[] | null;
 }
 
 const KOSONG: UmkmAwal = {
-  nama_usaha: "", deskripsi: "", no_whatsapp: "", alamat: "", gambar: null, galeri_foto: [],
+  nama_usaha: "", deskripsi: "", no_whatsapp: "", alamat: "", gambar: null, gambar_fokus: null, galeri_foto: [],
 };
 
 export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
@@ -30,7 +32,8 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
   const [deskripsi, setDeskripsi] = useState(awal.deskripsi ?? "");
   const [noWa, setNoWa] = useState(awal.no_whatsapp ?? "");
   const [alamat, setAlamat] = useState(awal.alamat ?? "");
-  const [gambar, setGambar] = useState(awal.gambar ?? "");
+  const gambar = awal.gambar ?? "";
+  const [gambarFokus, setGambarFokus] = useState(awal.gambar_fokus || "50% 50%");
   const [file, setFile] = useState<File | null>(null);
   const [galeri, setGaleri] = useState<string[]>(awal.galeri_foto ?? []);
   const [galeriFiles, setGaleriFiles] = useState<File[]>([]);
@@ -57,6 +60,7 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
         no_whatsapp: noWa || null,
         alamat: alamat || null,
         gambar: imageUrl || null,
+        gambar_fokus: gambarFokus,
         galeri_foto: galeriUrls,
       };
 
@@ -106,13 +110,13 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
         </div>
 
         <Field label="Gambar Utama" petunjuk="Otomatis diperkecil dan dikompres saat diunggah.">
-          <FileInput accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-          {gambar && !file && (
-            <div className="mt-3 relative w-full max-w-sm h-44 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={gambar} alt="Gambar utama saat ini" className="w-full h-full object-cover" />
-            </div>
-          )}
+          <ImageUploadField
+            gambar={gambar || null}
+            file={file}
+            onFileChange={setFile}
+            fokus={gambarFokus}
+            onFokusChange={setGambarFokus}
+          />
         </Field>
 
         <Field label="Galeri Produk" petunjuk="Bisa pilih beberapa sekaligus. Klik ✕ untuk membuang foto lama.">

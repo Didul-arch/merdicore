@@ -12,6 +12,9 @@ interface Props {
   priority?: boolean;
   className?: string;
   tombolClassName?: string;
+  /** Titik fokus crop (CSS object-position), cuma dipakai di thumbnail —
+      modal full-screen sengaja object-contain, tidak pernah dicrop. */
+  objectPosition?: string;
 }
 
 /**
@@ -33,6 +36,7 @@ export default function ZoomableImage({
   priority,
   className = "object-cover",
   tombolClassName = "absolute inset-0 w-full h-full cursor-zoom-in",
+  objectPosition,
 }: Props) {
   const [aktif, setAktif] = useState<number | null>(null);
   const terbuka = aktif !== null;
@@ -56,7 +60,7 @@ export default function ZoomableImage({
   return (
     <>
       <button onClick={() => setAktif(mulai)} className={tombolClassName} aria-label="Perbesar gambar">
-        <Image src={fotos[mulai]} alt={alt} fill sizes={sizes} priority={priority} className={className} referrerPolicy="no-referrer" />
+        <Image src={fotos[mulai]} alt={alt} fill sizes={sizes} priority={priority} className={className} style={objectPosition ? { objectPosition } : undefined} referrerPolicy="no-referrer" />
       </button>
 
       {terbuka && (
