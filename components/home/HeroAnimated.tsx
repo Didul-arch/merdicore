@@ -1,17 +1,21 @@
 "use client";
 
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { Compass, ChevronRight, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import heroPic from '@/app/hero-pic.jpg';
 
 export default function HeroAnimated() {
   return (
     <section className="relative min-h-[85vh] flex items-center pt-16 overflow-hidden">
-      <div
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transform scale-105 transition-transform duration-10000"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1555561331-50d48100300c?auto=format&fit=crop&w=1920&q=80')`,
-        }}
+      <Image
+        src={heroPic}
+        alt="Pemandangan Desa Pulung Merdiko"
+        fill
+        priority
+        sizes="100vw"
+        className="z-0 object-cover scale-105 transition-transform duration-10000"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-900/85 to-gray-800/40 z-10" />
 
