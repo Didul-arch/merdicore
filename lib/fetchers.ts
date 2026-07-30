@@ -6,7 +6,7 @@ import type { BeritaItem, UmkmItem, LembagaItem, PerangkatDesa } from '@/lib/typ
 
 export async function getLatestBerita(limit = 10): Promise<BeritaItem[]> {
   const rows = await sql`
-    SELECT b.id, b.judul, b.slug, b.konten, b.gambar, b.status, b.views,
+    SELECT b.id, b.judul, b.slug, b.konten, b.gambar, b.gambar_fokus, b.status, b.views,
            b.created_at, b.updated_at, u.nama AS penulis_nama
     FROM berita b
     LEFT JOIN users u ON b.penulis_id = u.id
@@ -34,7 +34,7 @@ export async function incrementBeritaViews(id: number): Promise<void> {
 export async function getAllUmkm(limit = 50): Promise<UmkmItem[]> {
   const rows = await sql`
     SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat,
-           um.gambar, um.galeri_foto, um.created_at, u.nama AS pemilik_nama
+           um.gambar, um.gambar_fokus, um.galeri_foto, um.created_at, u.nama AS pemilik_nama
     FROM umkm um
     LEFT JOIN users u ON um.pemilik_id = u.id
     ORDER BY um.created_at DESC
@@ -55,7 +55,7 @@ export async function getUmkmById(id: number): Promise<UmkmItem | null> {
 
 export async function getAllLembaga(limit = 50): Promise<LembagaItem[]> {
   const rows = await sql`
-    SELECT id, nama_lengkap, singkatan, nama_ketua, jumlah_anggota, deskripsi, gambar
+    SELECT id, nama_lengkap, singkatan, nama_ketua, jumlah_anggota, deskripsi, gambar, gambar_fokus
     FROM lembaga
     ORDER BY id ASC
     LIMIT ${limit}
@@ -65,8 +65,8 @@ export async function getAllLembaga(limit = 50): Promise<LembagaItem[]> {
 
 export async function getAllPerangkatDesa(limit = 50): Promise<PerangkatDesa[]> {
   const rows = await sql`
-    SELECT pd.id, pd.user_id, pd.jabatan, pd.nip, pd.pendidikan_terakhir,
-           pd.foto, pd.masa_jabatan, u.nama AS nama_user, u.email AS email_user
+    SELECT pd.id, pd.user_id, pd.nama, pd.no_hp, pd.jabatan, pd.nip, pd.pendidikan_terakhir,
+           pd.foto, pd.foto_fokus, pd.masa_jabatan, u.nama AS nama_user, u.email AS email_user
     FROM perangkat_desa pd
     LEFT JOIN users u ON pd.user_id = u.id
     ORDER BY pd.id ASC

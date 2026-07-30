@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/dashboard/Toast";
 import FormPage from "@/components/dashboard/FormPage";
-import { Field, TextInput, FileInput } from "@/components/dashboard/Field";
+import { Field, TextInput } from "@/components/dashboard/Field";
 import RichEditor from "@/components/dashboard/RichEditor";
+import ImageUploadField from "@/components/dashboard/ImageUploadField";
 import { uploadImage } from "@/lib/upload-image";
 import { keHtml, teksPolos } from "@/lib/utils";
 
@@ -17,10 +18,11 @@ export interface LembagaAwal {
   jumlah_anggota: number;
   deskripsi: string | null;
   gambar: string | null;
+  gambar_fokus: string | null;
 }
 
 const KOSONG: LembagaAwal = {
-  nama_lengkap: "", singkatan: "", nama_ketua: "", jumlah_anggota: 0, deskripsi: "", gambar: null,
+  nama_lengkap: "", singkatan: "", nama_ketua: "", jumlah_anggota: 0, deskripsi: "", gambar: null, gambar_fokus: null,
 };
 
 export default function LembagaForm({ awal = KOSONG }: { awal?: LembagaAwal }) {
@@ -32,7 +34,8 @@ export default function LembagaForm({ awal = KOSONG }: { awal?: LembagaAwal }) {
   const [namaKetua, setNamaKetua] = useState(awal.nama_ketua ?? "");
   const [jumlahAnggota, setJumlahAnggota] = useState<number | "">(awal.jumlah_anggota || "");
   const [deskripsi, setDeskripsi] = useState(keHtml(awal.deskripsi));
-  const [gambar, setGambar] = useState(awal.gambar ?? "");
+  const gambar = awal.gambar ?? "";
+  const [gambarFokus, setGambarFokus] = useState(awal.gambar_fokus || "50% 50%");
   const [file, setFile] = useState<File | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
@@ -52,6 +55,7 @@ export default function LembagaForm({ awal = KOSONG }: { awal?: LembagaAwal }) {
         jumlah_anggota: jumlahAnggota === "" ? 0 : Number(jumlahAnggota),
         deskripsi: deskripsi || null,
         gambar: imageUrl || null,
+        gambar_fokus: gambarFokus,
       };
 
       const res = await fetch(mode === "create" ? "/api/lembaga" : `/api/lembaga/${awal.id}`, {
@@ -118,13 +122,13 @@ export default function LembagaForm({ awal = KOSONG }: { awal?: LembagaAwal }) {
         </Field>
 
         <Field label="Logo / Gambar" petunjuk="Otomatis diperkecil dan dikompres saat diunggah.">
-          <FileInput accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-          {gambar && !file && (
-            <div className="mt-3 relative w-full max-w-sm h-44 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={gambar} alt="Gambar saat ini" className="w-full h-full object-cover" />
-            </div>
-          )}
+          <ImageUploadField
+            gambar={gambar || null}
+            file={file}
+            onFileChange={setFile}
+            fokus={gambarFokus}
+            onFokusChange={setGambarFokus}
+          />
         </Field>
       </FormPage>
     </>

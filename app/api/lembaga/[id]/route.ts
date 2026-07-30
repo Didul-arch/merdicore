@@ -57,7 +57,8 @@ export async function PUT(request: Request, context: RouteContext) {
           nama_ketua = ${body.nama_ketua || null},
           jumlah_anggota = ${body.jumlah_anggota || 0},
           deskripsi = ${deskripsi},
-          gambar = ${body.gambar || null}
+          gambar = ${body.gambar || null},
+          gambar_fokus = ${body.gambar_fokus || null}
       WHERE id = ${lembagaId}
       RETURNING *
     `;

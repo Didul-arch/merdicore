@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/dashboard/Toast";
 import FormPage from "@/components/dashboard/FormPage";
-import { Field, TextInput, Select, FileInput } from "@/components/dashboard/Field";
+import { Field, TextInput, Select } from "@/components/dashboard/Field";
 import RichEditor from "@/components/dashboard/RichEditor";
+import ImageUploadField from "@/components/dashboard/ImageUploadField";
 import { uploadImage } from "@/lib/upload-image";
 import { adaIsinya, keHtml, teksPolos } from "@/lib/utils";
 
@@ -15,10 +16,11 @@ export interface BeritaAwal {
   slug: string;
   konten: string;
   gambar: string | null;
+  gambar_fokus: string | null;
   status: string;
 }
 
-const KOSONG: BeritaAwal = { judul: "", slug: "", konten: "", gambar: null, status: "draft" };
+const KOSONG: BeritaAwal = { judul: "", slug: "", konten: "", gambar: null, gambar_fokus: null, status: "draft" };
 
 function toSlug(text: string) {
   return text
@@ -36,7 +38,8 @@ export default function BeritaForm({ awal = KOSONG }: { awal?: BeritaAwal }) {
   const [judul, setJudul] = useState(awal.judul);
   const [slug, setSlug] = useState(awal.slug);
   const [konten, setKonten] = useState(keHtml(awal.konten));
-  const [gambar, setGambar] = useState(awal.gambar ?? "");
+  const gambar = awal.gambar ?? "";
+  const [gambarFokus, setGambarFokus] = useState(awal.gambar_fokus || "50% 50%");
   const [status, setStatus] = useState(awal.status);
   const [file, setFile] = useState<File | null>(null);
 
@@ -64,6 +67,7 @@ export default function BeritaForm({ awal = KOSONG }: { awal?: BeritaAwal }) {
         slug: slug || toSlug(judul),
         konten,
         gambar: imageUrl || null,
+        gambar_fokus: gambarFokus,
         status,
       };
 
@@ -121,13 +125,13 @@ export default function BeritaForm({ awal = KOSONG }: { awal?: BeritaAwal }) {
         </Field>
 
         <Field label="Gambar Sampul" petunjuk="Otomatis diperkecil dan dikompres saat diunggah.">
-          <FileInput accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-          {gambar && !file && (
-            <div className="mt-3 relative w-full max-w-sm h-44 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={gambar} alt="Sampul saat ini" className="w-full h-full object-cover" />
-            </div>
-          )}
+          <ImageUploadField
+            gambar={gambar || null}
+            file={file}
+            onFileChange={setFile}
+            fokus={gambarFokus}
+            onFokusChange={setGambarFokus}
+          />
         </Field>
 
         <Field label="Status" petunjuk="Draft tidak tampil di situs publik.">

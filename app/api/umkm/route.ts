@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     if (search) {
       const searchPattern = `%${search}%`;
       umkm = await sql`
-        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.gambar, um.galeri_foto, um.created_at,
+        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.gambar, um.gambar_fokus, um.galeri_foto, um.created_at,
                u.nama AS pemilik_nama
         FROM umkm um
         LEFT JOIN users u ON um.pemilik_id = u.id
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       `;
     } else {
       umkm = await sql`
-        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.gambar, um.galeri_foto, um.created_at,
+        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.gambar, um.gambar_fokus, um.galeri_foto, um.created_at,
                u.nama AS pemilik_nama
         FROM umkm um
         LEFT JOIN users u ON um.pemilik_id = u.id
@@ -68,9 +68,9 @@ export async function POST(request: Request) {
     }
 
     const result = await sql`
-      INSERT INTO umkm (nama_usaha, pemilik_id, deskripsi, no_whatsapp, alamat, gambar, galeri_foto)
-      VALUES (${body.nama_usaha}, ${body.pemilik_id || null}, ${body.deskripsi || null}, ${body.no_whatsapp || null}, ${body.alamat || null}, ${body.gambar || null}, ${body.galeri_foto || []})
-      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, galeri_foto, created_at
+      INSERT INTO umkm (nama_usaha, pemilik_id, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto)
+      VALUES (${body.nama_usaha}, ${body.pemilik_id || null}, ${body.deskripsi || null}, ${body.no_whatsapp || null}, ${body.alamat || null}, ${body.gambar || null}, ${body.gambar_fokus || null}, ${body.galeri_foto || []})
+      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, created_at
     `;
 
     return NextResponse.json({

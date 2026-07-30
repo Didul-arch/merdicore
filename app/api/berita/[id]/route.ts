@@ -21,7 +21,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     const { id } = await context.params;
     const rows = await sql`
-      SELECT b.id, b.judul, b.slug, b.konten, b.gambar, b.status, b.views,
+      SELECT b.id, b.judul, b.slug, b.konten, b.gambar, b.gambar_fokus, b.status, b.views,
              b.created_at, b.updated_at, u.nama AS penulis_nama
       FROM berita b
       LEFT JOIN users u ON b.penulis_id = u.id
@@ -65,10 +65,11 @@ export async function PUT(request: Request, context: RouteContext) {
           slug = ${body.slug || ''},
           konten = ${konten},
           gambar = ${body.gambar || null},
+          gambar_fokus = ${body.gambar_fokus || null},
           status = ${body.status || 'draft'},
           updated_at = NOW()
       WHERE id = ${beritaId}
-      RETURNING id, judul, slug, gambar, status, created_at, updated_at
+      RETURNING id, judul, slug, gambar, gambar_fokus, status, created_at, updated_at
     `;
 
     if (result.length === 0) {

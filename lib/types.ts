@@ -6,6 +6,7 @@ export interface BeritaItem {
   slug: string;
   konten: string;
   gambar: string | null;
+  gambar_fokus: string | null;
   status: string;
   views: number;
   penulis_nama: string | null;
@@ -22,6 +23,7 @@ export interface UmkmItem {
   no_whatsapp: string | null;
   alamat: string | null;
   gambar: string | null;
+  gambar_fokus: string | null;
   galeri_foto: string[] | null;
   pemilik_nama: string | null;
   created_at: string;
@@ -37,6 +39,7 @@ export interface LembagaItem {
   jumlah_anggota: number;
   deskripsi: string | null;
   gambar: string | null;
+  gambar_fokus: string | null;
 }
 
 // === Regulasi (statis, belum ada tabel DB) ===
@@ -57,11 +60,15 @@ export interface Regulation {
 export interface PerangkatDesa {
   id: number;
   user_id: number | null;
+  nama: string;
+  no_hp: string;
   jabatan: string;
   nip: string | null;
   pendidikan_terakhir: string | null;
   foto: string | null;
+  foto_fokus: string | null;
   masa_jabatan: string | null;
+  // Terisi kalau baris ini dikaitkan ke akun login (opsional).
   nama_user: string | null;
   email_user: string | null;
 }

@@ -10,7 +10,7 @@ export default async function EditBeritaPage({ params }: { params: Promise<{ id:
   if (isNaN(beritaId)) notFound();
 
   const rows = await sql`
-    SELECT id, judul, slug, konten, gambar, status FROM berita WHERE id = ${beritaId}
+    SELECT id, judul, slug, konten, gambar, gambar_fokus, status FROM berita WHERE id = ${beritaId}
   `;
   if (rows.length === 0) notFound();
 

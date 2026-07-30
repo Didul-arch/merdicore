@@ -60,13 +60,10 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const userId = parseInt(id);
 
-    // perangkat_desa.user_id dan umkm.pemilik_id dua-duanya ON DELETE CASCADE,
-    // jadi menghapus user diam-diam ikut menghapus baris di kedua tabel itu.
-    // Fotonya dikumpulkan DULU selagi barisnya masih ada.
-    const [pd, um] = await Promise.all([
-      sql`SELECT foto FROM perangkat_desa WHERE user_id = ${userId}`,
-      sql`SELECT gambar, galeri_foto FROM umkm WHERE pemilik_id = ${userId}`,
-    ]);
+    // umkm.pemilik_id masih ON DELETE CASCADE -> baris UMKM ikut terhapus.
+    // perangkat_desa.user_id sekarang ON DELETE SET NULL -> datanya TETAP ada
+    // (cuma kaitan akunnya lepas), jadi fotonya JANGAN ikut dihapus.
+    const um = await sql`SELECT gambar, galeri_foto FROM umkm WHERE pemilik_id = ${userId}`;
 
     const result = await sql`DELETE FROM users WHERE id = ${userId} RETURNING id, nama, email, role`;
 
@@ -75,10 +72,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     }
 
     await hapusGambar(
-      kumpulkanGambar(
-        ...pd.map((r) => r.foto as string),
-        ...um.flatMap((r) => [r.gambar as string, r.galeri_foto as string[]]),
-      ),
+      kumpulkanGambar(...um.flatMap((r) => [r.gambar as string, r.galeri_foto as string[]])),
     );
 
     return NextResponse.json({
