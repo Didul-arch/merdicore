@@ -102,6 +102,17 @@
   transform: translateY(-6px);
 }
 
+/* Carousel berita/UMKM di homepage (HP): sembunyikan scrollbar, geser tetap
+   pakai scroll native bawaan browser (snap-x di JSX), bukan library JS. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Toast (dashboard) */
 @keyframes slide-in {
   from { opacity: 0; transform: translateY(-10px); }

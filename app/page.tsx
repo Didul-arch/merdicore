@@ -103,13 +103,16 @@ export default async function Page() {
           </div>
 
           {latestNews.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            // Di HP: baris geser (scroll-snap native, tanpa JS/library) — kartu berikutnya
+            // sengaja mengintip di tepi kanan sebagai penanda "bisa digeser".
+            // Dari md ke atas baris cukup lebar buat grid biasa, carousel dimatikan.
+            <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 no-scrollbar md:grid md:grid-cols-2 md:gap-8 lg:grid-cols-3">
               {latestNews.map((item) => (
-                <Link href={`/berita/${item.id}`} key={item.id} className="group">
+                <Link href={`/berita/${item.id}`} key={item.id} className="group shrink-0 w-[78%] sm:w-72 snap-start md:w-auto md:shrink">
                   <article className="bg-slate-50 rounded-2xl overflow-hidden border border-gray-150 hover:border-teal-500/30 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-full">
                     <div className="relative h-52 overflow-hidden bg-gray-100">
                       {item.gambar ? (
-                        <Image src={item.gambar} alt={item.judul} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                        <Image src={item.gambar} alt={item.judul} fill sizes="(max-width: 768px) 78vw, (max-width: 1024px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-50 to-sky-50">
                           <BookOpen className="w-12 h-12 text-teal-300" />
@@ -176,13 +179,14 @@ export default async function Page() {
           </div>
 
           {featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            // Sama seperti baris berita: carousel geser cuma di HP, grid biasa dari md ke atas.
+            <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 no-scrollbar md:grid md:grid-cols-2 md:gap-8 lg:grid-cols-3">
               {featuredProducts.map((product) => (
-                <Link href={`/umkm/${product.id}`} key={product.id} className="group">
+                <Link href={`/umkm/${product.id}`} key={product.id} className="group shrink-0 w-[78%] sm:w-72 snap-start md:w-auto md:shrink">
                   <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-teal-500/20 hover:shadow-xl transition-all duration-300 flex flex-col h-full">
                     <div className="relative h-56 overflow-hidden bg-gray-50 flex items-center justify-center p-2">
                       {product.gambar ? (
-                        <Image src={product.gambar} alt={product.nama_usaha} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover rounded-xl group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
+                        <Image src={product.gambar} alt={product.nama_usaha} fill sizes="(max-width: 768px) 78vw, (max-width: 1024px) 50vw, 33vw" className="object-cover rounded-xl group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
                       ) : (
                         <div className="w-full h-full rounded-xl flex items-center justify-center bg-gradient-to-br from-teal-50 to-emerald-50">
                           <ShoppingBag className="w-16 h-16 text-teal-200" />
