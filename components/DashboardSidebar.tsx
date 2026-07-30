@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Users2,
   MessageSquare,
+  Landmark,
 } from "lucide-react";
 import LogoutButton from "@/app/dashboard/LogoutButton";
 
@@ -38,15 +39,24 @@ export default function DashboardSidebar({ userName, userRole, className }: Side
       color: "text-sky-600 bg-sky-50",
     },
     {
-      // Halaman ini gabungan: kelola akun + tentukan siapa perangkat desa
-      // beserta jabatannya. Menu "Perangkat Desa" yang lama dilebur ke sini.
       label: "Manajemen User",
-      desc: "Akun & jabatan perangkat desa",
+      desc: "Akun login dashboard",
       path: "/dashboard/users",
       icon: Users,
       exact: false,
       roles: ["super_admin"],
       color: "text-violet-600 bg-violet-50",
+    },
+    {
+      // Terpisah dari Manajemen User: gak semua pejabat yang tampil di
+      // halaman publik perlu (atau boleh) punya akun login ke dashboard.
+      label: "Perangkat Desa",
+      desc: "Data tampil di halaman publik",
+      path: "/dashboard/perangkat",
+      icon: Landmark,
+      exact: false,
+      roles: ["super_admin"],
+      color: "text-indigo-600 bg-indigo-50",
     },
     {
       label: "Lembaga Desa",

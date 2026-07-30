@@ -19,10 +19,11 @@ export default function OfficialCard({ official }: Props) {
         {official.foto ? (
           <Image
             src={official.foto}
-            alt={official.nama_user || official.jabatan}
+            alt={official.nama}
             fill
             sizes="112px"
             className="object-cover"
+            style={{ objectPosition: official.foto_fokus || '50% 50%' }}
             referrerPolicy="no-referrer"
           />
         ) : (
@@ -34,7 +35,7 @@ export default function OfficialCard({ official }: Props) {
 
       <div className="space-y-1">
         <h4 className="font-bold text-gray-900 text-sm sm:text-base leading-tight">
-          {official.nama_user || '-'}
+          {official.nama}
         </h4>
         <p className="text-xs text-teal-600 font-semibold uppercase tracking-wider">
           {official.jabatan}

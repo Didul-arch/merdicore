@@ -18,37 +18,24 @@ export async function GET(request: Request) {
     let users;
     let countResult;
 
-    // LEFT JOIN ke perangkat_desa: satu halaman ini sekarang nampilin akun
-    // sekaligus jabatannya (kalau dia diangkat jadi perangkat desa).
-    // pd_id dipakai frontend buat tau ini nambah jabatan baru (PUT) atau ubah
-    // yang sudah ada (POST) di /api/perangkat-desa.
     if (search) {
       const searchPattern = `%${search}%`;
       users = await sql`
-        SELECT u.id, u.nama, u.email, u.role, u.no_hp, u.created_at,
-               pd.id AS pd_id, pd.jabatan, pd.nip, pd.pendidikan_terakhir,
-               pd.foto, pd.masa_jabatan
-        FROM users u
-        LEFT JOIN perangkat_desa pd ON pd.user_id = u.id
-        WHERE u.nama ILIKE ${searchPattern} OR u.email ILIKE ${searchPattern}
-           OR u.role::text ILIKE ${searchPattern} OR pd.jabatan ILIKE ${searchPattern}
-        ORDER BY u.id ASC
+        SELECT id, nama, email, role, no_hp, created_at
+        FROM users
+        WHERE nama ILIKE ${searchPattern} OR email ILIKE ${searchPattern} OR role::text ILIKE ${searchPattern}
+        ORDER BY id ASC
         LIMIT ${limit} OFFSET ${offset}
       `;
       countResult = await sql`
-        SELECT COUNT(*)::int AS total FROM users u
-        LEFT JOIN perangkat_desa pd ON pd.user_id = u.id
-        WHERE u.nama ILIKE ${searchPattern} OR u.email ILIKE ${searchPattern}
-           OR u.role::text ILIKE ${searchPattern} OR pd.jabatan ILIKE ${searchPattern}
+        SELECT COUNT(*)::int AS total FROM users
+        WHERE nama ILIKE ${searchPattern} OR email ILIKE ${searchPattern} OR role::text ILIKE ${searchPattern}
       `;
     } else {
       users = await sql`
-        SELECT u.id, u.nama, u.email, u.role, u.no_hp, u.created_at,
-               pd.id AS pd_id, pd.jabatan, pd.nip, pd.pendidikan_terakhir,
-               pd.foto, pd.masa_jabatan
-        FROM users u
-        LEFT JOIN perangkat_desa pd ON pd.user_id = u.id
-        ORDER BY u.id ASC
+        SELECT id, nama, email, role, no_hp, created_at
+        FROM users
+        ORDER BY id ASC
         LIMIT ${limit} OFFSET ${offset}
       `;
       countResult = await sql`SELECT COUNT(*)::int AS total FROM users`;
