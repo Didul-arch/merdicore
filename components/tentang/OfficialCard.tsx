@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from 'motion/react';
 import Image from 'next/image';
 import { Users } from 'lucide-react';
 import type { PerangkatDesa } from '@/lib/types';
@@ -11,10 +10,7 @@ interface Props {
 
 export default function OfficialCard({ official }: Props) {
   return (
-    <motion.div
-      whileHover={{ y: -6 }}
-      className="bg-white rounded-2xl overflow-hidden border border-gray-150 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center p-6 space-y-4"
-    >
+    <div className="hover-lift bg-white rounded-2xl overflow-hidden border border-gray-150 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center p-6 space-y-4">
       <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-teal-100 ring-2 ring-teal-600/10">
         {official.foto ? (
           <Image
@@ -48,6 +44,6 @@ export default function OfficialCard({ official }: Props) {
       <div className="w-full pt-3 border-t border-gray-50 text-[11px] text-gray-400 font-light">
         <span>Sedia melayani kebutuhan administratif warga desa.</span>
       </div>
-    </motion.div>
+    </div>
   );
 }
