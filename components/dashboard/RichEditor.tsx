@@ -4,9 +4,13 @@ import { useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
+// Di Tiptap v3, @tiptap/extension-table sudah jadi paket "kit" yang
+// nge-bundle Table/TableRow/TableHeader/TableCell sekaligus (named export,
+// bukan default) -- gak perlu impor dari 3 paket -row/-header/-cell terpisah.
+import { Table, TableRow, TableHeader, TableCell } from "@tiptap/extension-table";
 import {
     Bold, Italic, Strikethrough, List, ListOrdered, Quote,
-    Heading2, Heading3, Link2, ImagePlus, Undo2, Redo2, Loader2,
+    Heading2, Heading3, Link2, ImagePlus, Table2, Undo2, Redo2, Loader2,
 } from "lucide-react";
 import { uploadImage } from "@/lib/upload-image";
 
@@ -48,6 +52,7 @@ function TombolBar({
 
 export default function RichEditor({ isiAwal, onChange, folder, onError }: Props) {
     const inputFile = useRef<HTMLInputElement>(null);
+    const menuTabel = useRef<HTMLDetailsElement>(null);
     const [mengupload, setMengupload] = useState(false);
 
     const editor = useEditor({
@@ -58,11 +63,15 @@ export default function RichEditor({ isiAwal, onChange, folder, onError }: Props
         extensions: [
             StarterKit.configure({ link: { openOnClick: false } }),
             Image.configure({ HTMLAttributes: { class: "rounded-xl" } }),
+            Table.configure({ resizable: true }),
+            TableRow,
+            TableHeader,
+            TableCell,
         ],
         content: isiAwal,
         editorProps: {
             attributes: {
-                class: "prose prose-sm prose-teal max-w-none focus:outline-none min-h-64 px-3 py-2.5",
+                class: "prose prose-teal max-w-none focus:outline-none min-h-64 px-3 py-2.5",
             },
         },
         // Alurnya SATU ARAH: editor -> onChange -> state -> server.
@@ -95,6 +104,19 @@ export default function RichEditor({ isiAwal, onChange, folder, onError }: Props
         const rantai = ed.chain().focus().extendMarkRange("link");
         if (url.trim() === "") rantai.unsetLink().run();
         else rantai.setLink({ href: url.trim() }).run();
+    }
+
+    function sisipTabel(ed: Editor) {
+        // Dibatasi biar gak sengaja ngetik angka aneh yang bikin tabelnya
+        // gak muat / berat dirender.
+        ed.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+    }
+
+    // Dipanggil dari menu tabel: jalankan aksinya, lalu tutup menunya —
+    // <details> gak nutup sendiri abis tombol di dalamnya diklik.
+    function aksiTabel(ed: Editor, jalankan: (ed: Editor) => void) {
+        jalankan(ed);
+        if (menuTabel.current) menuTabel.current.open = false;
     }
 
     // Dengan immediatelyRender: false, editor bernilai null di render pertama —
@@ -145,6 +167,44 @@ export default function RichEditor({ isiAwal, onChange, folder, onError }: Props
                 <TombolBar judul="Sisipkan gambar" disabled={mengupload} onClick={() => inputFile.current?.click()}>
                     {mengupload ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
                 </TombolBar>
+
+                <span className="w-px bg-gray-200 mx-1 my-1" />
+
+                {editor.isActive("table") ? (
+                    // Di dalam tabel: satu menu ringkas dengan label teks jelas,
+                    // gantiin 5 tombol berjejer yang kemarin kepanjangan & bikin
+                    // toolbar sesak.
+                    <details ref={menuTabel} className="relative">
+                        <summary
+                            title="Menu tabel"
+                            className="list-none p-1.5 rounded-lg transition cursor-pointer text-teal-700 bg-teal-50 hover:bg-teal-100 [&::-webkit-details-marker]:hidden"
+                        >
+                            <Table2 className="w-4 h-4" />
+                        </summary>
+                        <div className="absolute left-0 top-full mt-1 z-20 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-xs">
+                            <button type="button" onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().addRowAfter().run())} className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                Tambah Baris
+                            </button>
+                            <button type="button" onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().deleteRow().run())} className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                Hapus Baris Ini
+                            </button>
+                            <button type="button" onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().addColumnAfter().run())} className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                Tambah Kolom
+                            </button>
+                            <button type="button" onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().deleteColumn().run())} className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                                Hapus Kolom Ini
+                            </button>
+                            <div className="my-1 border-t border-gray-100" />
+                            <button type="button" onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().deleteTable().run())} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600 cursor-pointer">
+                                Hapus Tabel
+                            </button>
+                        </div>
+                    </details>
+                ) : (
+                    <TombolBar judul="Sisipkan tabel" onClick={() => sisipTabel(editor)}>
+                        <Table2 className="w-4 h-4" />
+                    </TombolBar>
+                )}
 
                 <span className="flex-1" />
 

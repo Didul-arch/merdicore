@@ -8,6 +8,7 @@ export function bersihkanHtml(kotor: string): string {
       'ul', 'ol', 'li',
       'blockquote', 'code', 'pre',
       'a', 'img', 'hr',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
     ],
     allowedAttributes: {
       a: ['href', 'target', 'rel'],

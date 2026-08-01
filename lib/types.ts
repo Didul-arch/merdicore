@@ -42,17 +42,20 @@ export interface LembagaItem {
   gambar_fokus: string | null;
 }
 
-// === Regulasi (statis, belum ada tabel DB) ===
+// === Regulasi (peraturan desa & persyaratan surat digabung 1 tabel) ===
 
-export interface Regulation {
-  id: string;
-  number: string;
-  year: number;
-  title: string;
-  category: 'Keuangan' | 'Ketertiban' | 'Kelembagaan' | 'Hukum';
-  status: 'Berlaku' | 'Direvisi';
-  summary: string;
-  uploadedDate: string;
+export interface RegulasiItem {
+  id: number;
+  jenis: 'peraturan' | 'surat';
+  judul: string;
+  // nomor/tahun/kategori/status cuma dipakai jenis='peraturan'.
+  nomor: string | null;
+  tahun: number | null;
+  kategori: string | null;
+  status: string | null;
+  deskripsi: string | null;
+  file_url: string | null;
+  created_at: string;
 }
 
 // === Perangkat Desa ===
