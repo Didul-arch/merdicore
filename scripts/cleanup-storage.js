@@ -51,11 +51,12 @@ async function main() {
   } while (token);
 
   // 2. Semua file yang MASIH DIPAKAI menurut database
-  const [berita, umkm, perangkat, lembaga] = await Promise.all([
+  const [berita, umkm, perangkat, lembaga, regulasi] = await Promise.all([
     sql`SELECT gambar, konten FROM berita`,
     sql`SELECT gambar, galeri_foto FROM umkm`,
     sql`SELECT foto FROM perangkat_desa WHERE foto IS NOT NULL`,
     sql`SELECT gambar, deskripsi FROM lembaga`,
+    sql`SELECT file_url, deskripsi FROM regulasi`,
   ]);
 
   const used = new Set();
@@ -71,6 +72,7 @@ async function main() {
   umkm.forEach((r) => { mark(r.gambar); (r.galeri_foto || []).forEach(mark); });
   perangkat.forEach((r) => mark(r.foto));
   lembaga.forEach((r) => { mark(r.gambar); markTeks(r.deskripsi); });
+  regulasi.forEach((r) => { mark(r.file_url); markTeks(r.deskripsi); });
 
   // 3. Sisanya = nyangkut. Penanda folder bawaan Supabase jangan disentuh.
   const orphans = files.filter(

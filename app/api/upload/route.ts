@@ -3,7 +3,7 @@ import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 import { unggah, urlPublik } from '@/lib/storage';
 import sharp from 'sharp';
 
-const ALLOWED_FOLDERS = ['berita', 'umkm', 'avatar', 'umkm/galeri'] as const;
+const ALLOWED_FOLDERS = ['berita', 'umkm', 'avatar', 'umkm/galeri', 'regulasi'] as const;
 type Folder = typeof ALLOWED_FOLDERS[number];
 
 // Harus di bawah batas body Vercel (~4.5 MB) supaya yang kegedean dapat pesan
@@ -17,6 +17,8 @@ const ALLOWED_TYPES = [
   'image/webp',
   'image/gif',
   'image/svg+xml',
+  // Dokumen regulasi & template surat diunggah sebagai PDF, bukan gambar.
+  'application/pdf',
 ];
 
 // Area tampil terlebar di situs ~800px, jadi 1600px sudah cukup untuk layar
@@ -64,22 +66,22 @@ export async function POST(request: Request) {
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { success: false, message: 'Tipe file tidak didukung. Gunakan JPG, PNG, WebP, GIF, atau SVG' },
+        { success: false, message: 'Tipe file tidak didukung. Gunakan JPG, PNG, WebP, GIF, SVG, atau PDF' },
         { status: 400 }
       );
     }
 
     const original = Buffer.from(await file.arrayBuffer());
 
-    // SVG itu vektor — kalau dikompres sharp malah jadi gambar biasa dan pecah
-    // waktu di-zoom. Jadi dilewati, diupload apa adanya (ukurannya juga kecil).
-    const isSvg = file.type === 'image/svg+xml';
+    // SVG (vektor) dan PDF bukan raster image — sharp gak bisa/gak perlu
+    // memprosesnya, jadi keduanya dilewati dan diupload apa adanya.
+    const isRasterImage = file.type.startsWith('image/') && file.type !== 'image/svg+xml';
 
     let body: Buffer<ArrayBufferLike> = original;
     let contentType = file.type;
     let ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
 
-    if (!isSvg) {
+    if (isRasterImage) {
       body = await sharp(original)
         // .rotate() tanpa argumen = benerin orientasi sesuai EXIF. Wajib, kalau
         // nggak foto dari HP bisa kebalik/miring pas ditampilkan.
