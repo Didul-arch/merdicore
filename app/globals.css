@@ -113,6 +113,34 @@
   display: none;
 }
 
+/* Tabel di konten berita/lembaga (dari RichEditor) -- default `prose` garisnya
+   terlalu tipis buat dibedain, jadi ditegaskan sendiri: border penuh tiap sel,
+   header dikasih warna biar kebaca "ini judul kolom", garis selang-seling
+   biar mata gampang nyusurin satu baris. Discope ke `.prose table` doang,
+   gak ganggu tabel biasa di dashboard admin (yang gak pakai class prose). */
+.prose table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.prose thead th {
+  background-color: #f0fdfa;
+  color: #0f766e;
+}
+
+.prose tbody tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
 /* Toast (dashboard) */
 @keyframes slide-in {
   from { opacity: 0; transform: translateY(-10px); }
