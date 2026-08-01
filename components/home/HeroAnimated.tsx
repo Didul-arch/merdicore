@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from 'motion/react';
 import Image from 'next/image';
 import { Compass, ChevronRight, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -21,33 +20,18 @@ export default function HeroAnimated() {
 
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full text-white">
         <div className="max-w-3xl">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4"
-          >
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4 animate-slide-up-d1">
             Selamat Datang di <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-sky-400 to-emerald-400 font-extrabold">
               Desa Pulung Merdiko
             </span>
-          </motion.h2>
+          </h2>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-base sm:text-lg text-gray-200 mb-10 leading-relaxed max-w-2xl font-light"
-          >
+          <p className="text-base sm:text-lg text-gray-200 mb-10 leading-relaxed max-w-2xl font-light animate-slide-up-d2">
             Pusat informasi, layanan publik mandiri, dan galeri promosi UMKM Desa Pulung Merdiko. Membangun transparansi melalui inovasi teknologi untuk kesejahteraan masyarakat Ponorogo.
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
-            className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-5"
-          >
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-5 animate-slide-up-d3">
             <Link
               href="/tentang"
               className="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-6 py-3.5 rounded-xl shadow-lg hover:shadow-teal-500/20 flex items-center justify-center space-x-2 transition-all group"
@@ -64,7 +48,7 @@ export default function HeroAnimated() {
               <span>Kunjungi Pasar UMKM</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
-          </motion.div>
+          </div>
         </div>
       </div>
 
