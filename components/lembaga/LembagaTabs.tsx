@@ -34,11 +34,11 @@ export default function LembagaTabs({ lembagaList }: Props) {
       </div>
 
       {/* Lembaga Information Card */}
-      <div className="bg-white rounded-3xl p-8 sm:p-12 border border-gray-100 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-12 items-center animate-in fade-in duration-300">
-        <div className="lg:col-span-5 relative">
+      <div className="bg-white rounded-3xl p-8 sm:p-12 border border-gray-100 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-12 items-start animate-in fade-in duration-300">
+        <div className="lg:col-span-5 relative flex">
           <div className="absolute -top-4 -left-4 w-20 h-20 bg-teal-100/60 rounded-full blur-xl -z-10" />
           <div className="absolute -bottom-4 -right-4 w-40 h-40 bg-slate-900 rounded-3xl -z-10" />
-          <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-gray-150 bg-slate-100 flex items-center justify-center">
+          <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-gray-150 bg-slate-100 flex items-start justify-start">
             {activeData.gambar ? (
               <Image
                 src={activeData.gambar}
