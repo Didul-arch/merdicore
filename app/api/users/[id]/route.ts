@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import sql from '@/lib/db';
 import { requireRole } from '@/lib/auth';
 import { hapusGambar, kumpulkanGambar } from '@/lib/storage';
@@ -27,12 +28,25 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ success: false, message: 'Nomor HP maksimal 20 karakter' }, { status: 400 });
     }
 
-    const result = await sql`
-      UPDATE users
-      SET nama = ${body.nama}, role = ${body.role}, no_hp = ${noHp}
-      WHERE id = ${userId}
-      RETURNING id, nama, email, role, no_hp, created_at
-    `;
+    // password kosong = tidak diubah
+    const passwordBaru = typeof body.password === 'string' ? body.password.trim() : '';
+    if (passwordBaru && passwordBaru.length < 6) {
+      return NextResponse.json({ success: false, message: 'Password baru minimal 6 karakter' }, { status: 400 });
+    }
+
+    const result = passwordBaru
+      ? await sql`
+          UPDATE users
+          SET nama = ${body.nama}, role = ${body.role}, no_hp = ${noHp}, password_hash = ${await bcrypt.hash(passwordBaru, 10)}
+          WHERE id = ${userId}
+          RETURNING id, nama, email, role, no_hp, created_at
+        `
+      : await sql`
+          UPDATE users
+          SET nama = ${body.nama}, role = ${body.role}, no_hp = ${noHp}
+          WHERE id = ${userId}
+          RETURNING id, nama, email, role, no_hp, created_at
+        `;
 
     if (result.length === 0) {
       return NextResponse.json({ success: false, message: 'User tidak ditemukan' }, { status: 404 });
