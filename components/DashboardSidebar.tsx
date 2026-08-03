@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Landmark,
   Scale,
+  KeyRound,
 } from "lucide-react";
 import LogoutButton from "@/app/dashboard/LogoutButton";
 
@@ -103,6 +104,15 @@ export default function DashboardSidebar({ userName, userRole, className }: Side
       exact: false,
       roles: ["super_admin", "perangkat_desa"],
       color: "text-rose-600 bg-rose-50",
+    },
+    {
+      label: "Ganti Password",
+      desc: "Ubah kata sandi akun Anda",
+      path: "/dashboard/akun",
+      icon: KeyRound,
+      exact: false,
+      roles: ["super_admin", "perangkat_desa"],
+      color: "text-gray-600 bg-gray-100",
     },
   ];
 
