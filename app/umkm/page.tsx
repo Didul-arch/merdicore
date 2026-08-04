@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getAllUmkm } from '@/lib/fetchers';
 import UmkmSearchableList from '@/components/umkm/UmkmSearchableList';
+import UmkmMap from '@/components/umkm/UmkmMap';
 
 export const metadata: Metadata = {
   title: "Etalase UMKM",
@@ -13,6 +14,9 @@ export const revalidate = 60;
 
 export default async function UmkmPage() {
   const products = await getAllUmkm(50);
+  const titikPeta = products
+    .filter((p) => p.latitude != null && p.longitude != null)
+    .map((p) => ({ id: p.id, nama_usaha: p.nama_usaha, latitude: p.latitude!, longitude: p.longitude! }));
 
   return (
     <div className="py-24 bg-slate-50 min-h-screen">
@@ -29,6 +33,13 @@ export default async function UmkmPage() {
             </p>
           </div>
         </div>
+
+        {titikPeta.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-lg font-extrabold text-gray-900 tracking-tight">Sebaran Lokasi UMKM</h3>
+            <UmkmMap items={titikPeta} />
+          </div>
+        )}
 
         {/* Search + Grid — Client Component */}
         <UmkmSearchableList initialData={products} />

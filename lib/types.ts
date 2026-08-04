@@ -26,6 +26,8 @@ export interface UmkmItem {
   gambar_fokus: string | null;
   galeri_foto: string[] | null;
   pemilik_nama: string | null;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
 }
 

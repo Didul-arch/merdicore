@@ -17,7 +17,8 @@ export async function GET(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const rows = await sql`
       SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat,
-             um.gambar, um.gambar_fokus, um.galeri_foto, um.created_at, u.nama AS pemilik_nama
+             um.gambar, um.gambar_fokus, um.galeri_foto, um.latitude, um.longitude,
+             um.created_at, u.nama AS pemilik_nama
       FROM umkm um
       LEFT JOIN users u ON um.pemilik_id = u.id
       WHERE um.id = ${parseInt(id)}
@@ -49,6 +50,12 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ success: false, message: 'Nama usaha wajib diisi' }, { status: 400 });
     }
 
+    const lat = body.latitude === '' || body.latitude == null ? null : Number(body.latitude);
+    const lng = body.longitude === '' || body.longitude == null ? null : Number(body.longitude);
+    if ((lat !== null && !Number.isFinite(lat)) || (lng !== null && !Number.isFinite(lng))) {
+      return NextResponse.json({ success: false, message: 'Koordinat lokasi tidak valid' }, { status: 400 });
+    }
+
     const sebelum = await sql`SELECT gambar, galeri_foto FROM umkm WHERE id = ${umkmId}`;
 
     const result = await sql`
@@ -59,9 +66,11 @@ export async function PUT(request: Request, context: RouteContext) {
           alamat = ${body.alamat || null},
           gambar = ${body.gambar || null},
           gambar_fokus = ${body.gambar_fokus || null},
-          galeri_foto = ${body.galeri_foto || []}
+          galeri_foto = ${body.galeri_foto || []},
+          latitude = ${lat},
+          longitude = ${lng}
       WHERE id = ${umkmId}
-      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, created_at
+      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, latitude, longitude, created_at
     `;
 
     if (result.length === 0) {

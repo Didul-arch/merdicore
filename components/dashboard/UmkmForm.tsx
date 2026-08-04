@@ -18,10 +18,13 @@ export interface UmkmAwal {
   gambar: string | null;
   gambar_fokus: string | null;
   galeri_foto: string[] | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const KOSONG: UmkmAwal = {
   nama_usaha: "", deskripsi: "", no_whatsapp: "", alamat: "", gambar: null, gambar_fokus: null, galeri_foto: [],
+  latitude: null, longitude: null,
 };
 
 export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
@@ -32,6 +35,8 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
   const [deskripsi, setDeskripsi] = useState(awal.deskripsi ?? "");
   const [noWa, setNoWa] = useState(awal.no_whatsapp ?? "");
   const [alamat, setAlamat] = useState(awal.alamat ?? "");
+  const [latitude, setLatitude] = useState(awal.latitude != null ? String(awal.latitude) : "");
+  const [longitude, setLongitude] = useState(awal.longitude != null ? String(awal.longitude) : "");
   const gambar = awal.gambar ?? "";
   const [gambarFokus, setGambarFokus] = useState(awal.gambar_fokus || "50% 50%");
   const [file, setFile] = useState<File | null>(null);
@@ -62,6 +67,8 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
         gambar: imageUrl || null,
         gambar_fokus: gambarFokus,
         galeri_foto: galeriUrls,
+        latitude: latitude.trim() || null,
+        longitude: longitude.trim() || null,
       };
 
       const res = await fetch(mode === "create" ? "/api/umkm" : `/api/umkm/${awal.id}`, {
@@ -106,6 +113,30 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
           </Field>
           <Field label="Alamat">
             <TextInput value={alamat} onChange={(e) => setAlamat(e.target.value)} placeholder="Alamat usaha" />
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <Field
+            label="Latitude"
+            petunjuk="Buka lokasi usaha di Google Maps, klik kanan titiknya, salin angka pertama."
+          >
+            <TextInput
+              type="number"
+              step="any"
+              value={latitude}
+              onChange={(e) => setLatitude(e.target.value)}
+              placeholder="-7.8643"
+            />
+          </Field>
+          <Field label="Longitude" petunjuk="Angka kedua dari koordinat yang sama.">
+            <TextInput
+              type="number"
+              step="any"
+              value={longitude}
+              onChange={(e) => setLongitude(e.target.value)}
+              placeholder="111.6421"
+            />
           </Field>
         </div>
 

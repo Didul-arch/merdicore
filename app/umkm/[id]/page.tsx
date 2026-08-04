@@ -6,6 +6,7 @@ import { getUmkmById } from '@/lib/fetchers';
 import { ringkas } from '@/lib/site';
 import WhatsAppButton from '@/components/umkm/WhatsAppButton';
 import ZoomableImage from '@/components/ZoomableImage';
+import UmkmMap from '@/components/umkm/UmkmMap';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -127,6 +128,16 @@ export default async function UmkmDetailPage({ params }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Lokasi */}
+        {product.latitude != null && product.longitude != null && (
+          <div className="mt-12 space-y-6">
+            <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight">Lokasi Usaha</h3>
+            <UmkmMap
+              items={[{ id: product.id, nama_usaha: product.nama_usaha, latitude: product.latitude, longitude: product.longitude }]}
+            />
+          </div>
+        )}
 
         {/* Galeri Foto */}
         {product.galeri_foto && product.galeri_foto.length > 0 && (
