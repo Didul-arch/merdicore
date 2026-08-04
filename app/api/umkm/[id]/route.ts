@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 import { hapusGambar, hapusGambarYangDilepas, kumpulkanGambar } from '@/lib/storage';
+import { ambilSrcMapsEmbed } from '@/lib/utils';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -17,7 +18,7 @@ export async function GET(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const rows = await sql`
       SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat,
-             um.gambar, um.gambar_fokus, um.galeri_foto, um.latitude, um.longitude,
+             um.gambar, um.gambar_fokus, um.galeri_foto, um.peta_embed_url,
              um.created_at, u.nama AS pemilik_nama
       FROM umkm um
       LEFT JOIN users u ON um.pemilik_id = u.id
@@ -50,10 +51,9 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ success: false, message: 'Nama usaha wajib diisi' }, { status: 400 });
     }
 
-    const lat = body.latitude === '' || body.latitude == null ? null : Number(body.latitude);
-    const lng = body.longitude === '' || body.longitude == null ? null : Number(body.longitude);
-    if ((lat !== null && !Number.isFinite(lat)) || (lng !== null && !Number.isFinite(lng))) {
-      return NextResponse.json({ success: false, message: 'Koordinat lokasi tidak valid' }, { status: 400 });
+    const petaEmbedUrl = body.peta_embed_url ? ambilSrcMapsEmbed(body.peta_embed_url) : null;
+    if (body.peta_embed_url && !petaEmbedUrl) {
+      return NextResponse.json({ success: false, message: 'Link/kode sematan Google Maps tidak valid' }, { status: 400 });
     }
 
     const sebelum = await sql`SELECT gambar, galeri_foto FROM umkm WHERE id = ${umkmId}`;
@@ -67,10 +67,9 @@ export async function PUT(request: Request, context: RouteContext) {
           gambar = ${body.gambar || null},
           gambar_fokus = ${body.gambar_fokus || null},
           galeri_foto = ${body.galeri_foto || []},
-          latitude = ${lat},
-          longitude = ${lng}
+          peta_embed_url = ${petaEmbedUrl}
       WHERE id = ${umkmId}
-      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, latitude, longitude, created_at
+      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, peta_embed_url, created_at
     `;
 
     if (result.length === 0) {

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
 import { requireRole, ADMIN_ROLES } from '@/lib/auth';
 import { parsePagination } from '@/lib/pagination';
+import { ambilSrcMapsEmbed } from '@/lib/utils';
 
 export async function GET(request: Request) {
   try {
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
     if (search) {
       const searchPattern = `%${search}%`;
       umkm = await sql`
-        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.gambar, um.gambar_fokus, um.galeri_foto, um.latitude, um.longitude, um.created_at,
+        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.gambar, um.gambar_fokus, um.galeri_foto, um.peta_embed_url, um.created_at,
                u.nama AS pemilik_nama
         FROM umkm um
         LEFT JOIN users u ON um.pemilik_id = u.id
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
       `;
     } else {
       umkm = await sql`
-        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.gambar, um.gambar_fokus, um.galeri_foto, um.latitude, um.longitude, um.created_at,
+        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.gambar, um.gambar_fokus, um.galeri_foto, um.peta_embed_url, um.created_at,
                u.nama AS pemilik_nama
         FROM umkm um
         LEFT JOIN users u ON um.pemilik_id = u.id
@@ -67,16 +68,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Nama usaha wajib diisi' }, { status: 400 });
     }
 
-    const lat = body.latitude === '' || body.latitude == null ? null : Number(body.latitude);
-    const lng = body.longitude === '' || body.longitude == null ? null : Number(body.longitude);
-    if ((lat !== null && !Number.isFinite(lat)) || (lng !== null && !Number.isFinite(lng))) {
-      return NextResponse.json({ success: false, message: 'Koordinat lokasi tidak valid' }, { status: 400 });
+    const petaEmbedUrl = body.peta_embed_url ? ambilSrcMapsEmbed(body.peta_embed_url) : null;
+    if (body.peta_embed_url && !petaEmbedUrl) {
+      return NextResponse.json({ success: false, message: 'Link/kode sematan Google Maps tidak valid' }, { status: 400 });
     }
 
     const result = await sql`
-      INSERT INTO umkm (nama_usaha, pemilik_id, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, latitude, longitude)
-      VALUES (${body.nama_usaha}, ${body.pemilik_id || null}, ${body.deskripsi || null}, ${body.no_whatsapp || null}, ${body.alamat || null}, ${body.gambar || null}, ${body.gambar_fokus || null}, ${body.galeri_foto || []}, ${lat}, ${lng})
-      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, latitude, longitude, created_at
+      INSERT INTO umkm (nama_usaha, pemilik_id, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, peta_embed_url)
+      VALUES (${body.nama_usaha}, ${body.pemilik_id || null}, ${body.deskripsi || null}, ${body.no_whatsapp || null}, ${body.alamat || null}, ${body.gambar || null}, ${body.gambar_fokus || null}, ${body.galeri_foto || []}, ${petaEmbedUrl})
+      RETURNING id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, peta_embed_url, created_at
     `;
 
     return NextResponse.json({

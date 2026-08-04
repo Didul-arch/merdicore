@@ -8,7 +8,7 @@ export default async function EditUmkmPage({ params }: { params: Promise<{ id: s
   if (isNaN(umkmId)) notFound();
 
   const rows = await sql`
-    SELECT id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, latitude, longitude
+    SELECT id, nama_usaha, deskripsi, no_whatsapp, alamat, gambar, gambar_fokus, galeri_foto, peta_embed_url
     FROM umkm WHERE id = ${umkmId}
   `;
   if (rows.length === 0) notFound();
