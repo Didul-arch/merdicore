@@ -50,6 +50,10 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
   },
+
+  verification: {
+    google: "5LYuanKdbkmBbmGctFo5IB5C4ZZDXwYW-wJe7S5MJAY",
+  },
 };
 
 export default function RootLayout({
