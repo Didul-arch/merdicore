@@ -58,6 +58,11 @@
   }
 }
 
+@keyframes topbar-grow {
+  from { width: 0%; }
+  to { width: 85%; }
+}
+
 @keyframes zoom-in {
   from {
     opacity: 0;
@@ -87,6 +92,13 @@
 
 .animate-slide-up-d3 {
   animation: slide-up 0.6s ease-out 0.45s both;
+}
+
+.animate-topbar {
+  /* Gak tahu progres asli (Next gak expose itu) — cuma tumbuh mendekati
+     penuh lalu berhenti di situ. Begitu halaman siap, elemen ini langsung
+     dilepas Suspense, jadi kelihatan kayak "loncat" ke selesai. */
+  animation: topbar-grow 1.4s cubic-bezier(0.1, 0.7, 1, 0.1) forwards;
 }
 
 .animate-zoom-in {
