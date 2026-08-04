@@ -65,7 +65,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={`h-full antialiased ${inter.variable} ${spaceGrotesk.variable}`}>
       <body className="min-h-full flex flex-col">
-        <NextTopLoader color="#0d9488" height={3} showSpinner={false} />
+        <NextTopLoader color="#0d9488" height={5} showSpinner={false} />
         <Header />
         <main className="flex-grow">
           {children}
