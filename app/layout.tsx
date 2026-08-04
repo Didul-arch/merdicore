@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -50,6 +51,10 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
   },
+
+  verification: {
+    google: "5LYuanKdbkmBbmGctFo5IB5C4ZZDXwYW-wJe7S5MJAY",
+  },
 };
 
 export default function RootLayout({
@@ -60,6 +65,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={`h-full antialiased ${inter.variable} ${spaceGrotesk.variable}`}>
       <body className="min-h-full flex flex-col">
+        <NextTopLoader color="#0d9488" height={5} showSpinner={false} />
         <Header />
         <main className="flex-grow">
           {children}
