@@ -34,7 +34,8 @@ export async function incrementBeritaViews(id: number): Promise<void> {
 export async function getAllUmkm(limit = 50): Promise<UmkmItem[]> {
   const rows = await sql`
     SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat,
-           um.gambar, um.gambar_fokus, um.galeri_foto, um.created_at, u.nama AS pemilik_nama
+           um.gambar, um.gambar_fokus, um.galeri_foto, um.peta_embed_url,
+           um.created_at, u.nama AS pemilik_nama
     FROM umkm um
     LEFT JOIN users u ON um.pemilik_id = u.id
     ORDER BY um.created_at DESC

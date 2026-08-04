@@ -26,6 +26,7 @@ export interface UmkmItem {
   gambar_fokus: string | null;
   galeri_foto: string[] | null;
   pemilik_nama: string | null;
+  peta_embed_url: string | null;
   created_at: string;
 }
 

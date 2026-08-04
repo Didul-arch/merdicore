@@ -38,6 +38,28 @@ export function generateWhatsAppUrl(phone: string, message: string): string {
   return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
 }
 
+/**
+ * Admin nempel potongan HTML <iframe> dari Google Maps (Bagikan → Sematkan
+ * peta) atau langsung URL src-nya. Ambil URL-nya saja, dan pastikan memang
+ * mengarah ke google.com/maps — dipakai sebagai src <iframe> di halaman
+ * publik, jadi harus disaring supaya admin (atau akunnya yang kebobol) gak
+ * bisa nyematkan situs sembarangan ke halaman UMKM.
+ */
+export function ambilSrcMapsEmbed(input: string): string | null {
+  const teks = (input || '').trim();
+  if (!teks) return null;
+  const cocok = teks.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);
+  const url = cocok ? cocok[1] : teks;
+  try {
+    const u = new URL(url);
+    const hostOk = u.hostname === 'www.google.com' || u.hostname === 'maps.google.com';
+    if (hostOk && u.pathname.startsWith('/maps')) return url;
+  } catch {
+    // bukan URL valid, jatuh ke return null di bawah
+  }
+  return null;
+}
+
 /* ── Bantuan untuk konten dari editor teks kaya ──
    Ditaruh di sini, BUKAN di lib/sanitize.ts, karena file itu meng-import
    sanitize-html yang khusus Node. Kalau helper ini ikut di sana, paket berat
