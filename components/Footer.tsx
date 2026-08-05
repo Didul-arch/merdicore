@@ -112,7 +112,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center space-x-3.5">
                 <Clock className="w-4 h-4 text-teal-400 flex-shrink-0" />
-                <span>Sen - Jum: 08:00 - 15:30</span>
+                <span>Sen - Jum: 08:00 - 15:00</span>
               </li>
             </ul>
           </div>
@@ -121,8 +121,10 @@ export default function Footer() {
 
       {/* Copyright */}
       <div className="bg-slate-950 py-6 border-t border-slate-900 text-xs text-gray-500 font-light">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left">
+        <div className="flex gap-2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left">
           <p>© {currentYear} Pemerintah Desa Pulung Merdiko. All rights reserved.</p>
+          <span>|</span>
+          <span>Developed by TEAM KKNT IPB 2026</span>
         </div>
       </div>
     </footer>
