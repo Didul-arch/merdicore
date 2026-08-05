@@ -1,9 +1,10 @@
 "use client";
 
 import { Mail, Phone, Clock, Share2 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import VillageLogo from './VillageLogo';
+import logoDesa from '@/app/icon.png';
 
 const NAV_LINKS = [
   { label: 'Beranda', path: '/' },
@@ -49,7 +50,7 @@ export default function Footer() {
               className="flex items-center space-x-3 cursor-pointer"
             >
               <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center p-0.5">
-                <VillageLogo size={32} />
+                <Image src={logoDesa} alt="Logo Pemerintah Desa Pulung Merdiko" width={32} height={32} className="object-contain" />
               </div>
               <div>
                 <h4 className="text-xs sm:text-sm font-bold text-white tracking-wider leading-tight">
