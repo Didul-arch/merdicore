@@ -27,6 +27,12 @@ interface User {
     created_at: string;
 }
 
+interface UmkmRingkas {
+    id: number;
+    nama_usaha: string;
+    pemilik_id: number | null;
+}
+
 type FormMode = "create" | "edit";
 
 const ROLE_OPTIONS = [
@@ -59,6 +65,7 @@ export default function UsersManagementPage() {
     const [fNoHp, setFNoHp] = useState("");
     const [fRole, setFRole] = useState("perangkat_desa");
     const [fPassword, setFPassword] = useState("");
+    const [fUmkmIds, setFUmkmIds] = useState<number[]>([]);
 
     const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
     const [deleting, setDeleting] = useState(false);
@@ -81,6 +88,11 @@ export default function UsersManagementPage() {
     const total = data?.pagination?.total ?? 0;
     const totalPages = data?.pagination?.totalPages ?? 1;
 
+    // Buat pilihan "UMKM mana yang dimiliki" di form edit. limit=100 cukup
+    // untuk skala desa — daftar UMKM gak akan ratusan.
+    const { data: umkmData, mutate: mutateUmkm } = useSWR(`/api/umkm?limit=100`, fetcher);
+    const umkmList: UmkmRingkas[] = umkmData?.data ?? [];
+
     function openCreate() {
         setFormMode("create");
         setEditingUser(null);
@@ -89,6 +101,7 @@ export default function UsersManagementPage() {
         setFNoHp("");
         setFRole("perangkat_desa");
         setFPassword("");
+        setFUmkmIds([]);
         setModalOpen(true);
     }
 
@@ -100,7 +113,12 @@ export default function UsersManagementPage() {
         setFNoHp(user.no_hp ?? "");
         setFRole(user.role);
         setFPassword("");
+        setFUmkmIds(umkmList.filter((u) => u.pemilik_id === user.id).map((u) => u.id));
         setModalOpen(true);
+    }
+
+    function toggleUmkm(id: number) {
+        setFUmkmIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
     }
 
     async function handleSubmit(e: React.FormEvent) {
@@ -126,11 +144,12 @@ export default function UsersManagementPage() {
                 const res = await fetch(`/api/users/${editingUser.id}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nama: fNama, no_hp: fNoHp, role: fRole, password: fPassword }),
+                    body: JSON.stringify({ nama: fNama, no_hp: fNoHp, role: fRole, password: fPassword, umkm_ids: fUmkmIds }),
                 });
                 const json = await res.json();
                 if (!res.ok) throw new Error(json.message || "Gagal mengubah user");
                 setToast({ message: "User berhasil diperbarui!", type: "success" });
+                mutateUmkm();
             }
             setModalOpen(false);
             mutate();
@@ -368,6 +387,35 @@ export default function UsersManagementPage() {
                                     perangkat desa di halaman publik, kaitkan lewat menu <em>Perangkat Desa</em>.
                                 </p>
                             </div>
+
+                            {formMode === "edit" && (
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">UMKM yang Dimiliki</label>
+                                    <div className="border border-gray-200 rounded-xl max-h-40 overflow-y-auto divide-y divide-gray-100">
+                                        {umkmList.length === 0 ? (
+                                            <p className="text-xs text-gray-400 px-3 py-3">Belum ada UMKM terdaftar.</p>
+                                        ) : (
+                                            umkmList.map((u) => (
+                                                <label key={u.id} className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={fUmkmIds.includes(u.id)}
+                                                        onChange={() => toggleUmkm(u.id)}
+                                                        className="rounded border-gray-300 text-teal-600 focus:ring-teal-500/30 cursor-pointer"
+                                                    />
+                                                    <span className="truncate">{u.nama_usaha}</span>
+                                                    {u.pemilik_id != null && u.pemilik_id !== editingUser?.id && (
+                                                        <span className="text-[10px] text-amber-600 ml-auto shrink-0">sudah ada pemilik lain</span>
+                                                    )}
+                                                </label>
+                                            ))
+                                        )}
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mt-1">
+                                        Centang UMKM yang jadi milik user ini. Mencentang yang sudah dimiliki user lain akan memindahkan kepemilikannya ke sini.
+                                    </p>
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">
