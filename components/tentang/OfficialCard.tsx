@@ -1,8 +1,9 @@
 "use client";
 
 import Image from 'next/image';
-import { Users } from 'lucide-react';
+import { Users, Phone } from 'lucide-react';
 import type { PerangkatDesa } from '@/lib/types';
+import { generateWhatsAppUrl } from '@/lib/utils';
 
 interface Props {
   official: PerangkatDesa;
@@ -41,9 +42,15 @@ export default function OfficialCard({ official }: Props) {
         )}
       </div>
 
-      <div className="w-full pt-3 border-t border-gray-50 text-[11px] text-gray-400 font-light">
-        <span>Sedia melayani kebutuhan administratif warga desa.</span>
-      </div>
+      <a
+        href={generateWhatsAppUrl(official.no_hp, `Halo ${official.nama}, saya warga Desa Pulung Merdiko ingin bertanya seputar layanan desa.`)}
+        target="_blank"
+        rel="noreferrer"
+        className="w-full pt-3 border-t border-gray-50 flex items-center justify-center gap-1.5 text-[11px] text-gray-500 font-semibold hover:text-teal-600 transition-colors"
+      >
+        <Phone className="w-3.5 h-3.5" />
+        <span>{official.no_hp}</span>
+      </a>
     </div>
   );
 }
