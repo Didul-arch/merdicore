@@ -29,7 +29,7 @@ export default async function Page() {
               <div className="relative h-[380px] rounded-2xl overflow-hidden shadow-xl border border-gray-100 bg-white">
                 <Image
                   src={fotoMakam}
-                  alt="Makam Eyang Raden Tumenggung Djajengrana, cagar budaya Desa Pulung Merdiko"
+                  alt="Makam Eyang Raden Tumenggung Djayengrono, cagar budaya Desa Pulung Merdiko"
                   fill
                   sizes="(max-width: 1024px) 100vw, 40vw"
                   className="object-cover hover:scale-105 transition-transform duration-500"
@@ -47,7 +47,7 @@ export default async function Page() {
               </div>
 
               <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-light">
-                Terletak di Kecamatan Pulung, Kabupaten Ponorogo, Desa Pulung Merdiko merupakan perpaduan harmonis antara kearifan lokal yang terjaga dan semangat kemandirian ekonomi. Kami berkomitmen meningkatkan kualitas hidup warga melalui digitalisasi pelayanan, dukungan kerajinan bambu, pertanian organik, serta wisata sejarah Makam Eyang Djajengrana.
+                Terletak di Kecamatan Pulung, Kabupaten Ponorogo, Desa Pulung Merdiko merupakan perpaduan harmonis antara kearifan lokal yang terjaga dan semangat kemandirian ekonomi. Kami berkomitmen meningkatkan kualitas hidup warga melalui digitalisasi pelayanan, dukungan kerajinan bambu, pertanian organik, serta wisata sejarah Makam Eyang Djayengrono.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-2">
@@ -60,7 +60,7 @@ export default async function Page() {
                 <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-150/60 flex-1">
                   <h5 className="font-bold text-gray-800 text-xs sm:text-sm mb-1">Sejarah Singkat</h5>
                   <p className="text-xs text-gray-500 font-light">
-                    Didirikan oleh para pejuang pengikut Pangeran Diponegoro yang dipimpin Eyang Djajengrana sebagai wilayah merdeka (Merdiko).
+                    Didirikan oleh para pejuang pengikut Pangeran Diponegoro yang dipimpin Eyang Djayengrono sebagai wilayah merdeka (Merdiko).
                   </p>
                 </div>
               </div>

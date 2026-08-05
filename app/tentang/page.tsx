@@ -46,7 +46,7 @@ export default async function TentangPage() {
             <div className="relative w-full h-80 rounded-2xl overflow-hidden shadow-md border border-gray-150">
               <Image
                 src={fotoMakamProfil}
-                alt="Makam Eyang Raden Tumenggung Djajengrana, cagar budaya Desa Pulung Merdiko"
+                alt="Makam Eyang Raden Tumenggung Djayengrono, cagar budaya Desa Pulung Merdiko"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 className="object-cover object-top"
@@ -64,7 +64,7 @@ export default async function TentangPage() {
               Nama <strong>&quot;Pulung Merdiko&quot;</strong> memiliki akar filosofis yang mendalam. Menurut kisah turun-temurun dari para tetua desa, kata <em>&quot;Pulung&quot;</em> merujuk pada wahyu, keberuntungan, atau pancaran cahaya spiritual positif yang turun di wilayah ini. Sedangkan kata <em>&quot;Merdiko&quot;</em> berarti merdeka, bebas, dan berdaulat.
             </p>
             <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
-              Sejarah bermula pada pertengahan abad ke-19, saat wilayah ini berupa hutan belantara yang lebat. Sekelompok prajurit pengikut setia Pangeran Diponegoro yang mengembara ke arah timur Ponorogo membuka lahan baru. Dipimpin oleh <strong>Eyang Raden Tumenggung Djajengrana</strong>, mereka menetap dan mendirikan pemukiman yang mandiri bebas dari penjajahan Belanda.
+              Sejarah bermula pada pertengahan abad ke-19, saat wilayah ini berupa hutan belantara yang lebat. Sekelompok prajurit pengikut setia Pangeran Diponegoro yang mengembara ke arah timur Ponorogo membuka lahan baru. Dipimpin oleh <strong>Eyang Raden Tumenggung Djayengrono</strong>, mereka menetap dan mendirikan pemukiman yang mandiri bebas dari penjajahan Belanda.
             </p>
             <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
               Hingga hari ini, semangat kemandirian dan rasa kegotongroyongan kian mengakar kuat, menempatkan Desa Pulung Merdiko sebagai desa pelopor kedamaian, harmoni budaya, serta ketangguhan ekonomi kreatif di Kabupaten Ponorogo.
