@@ -15,12 +15,12 @@ export async function GET(request: Request) {
     if (search) {
       const searchPattern = `%${search}%`;
       data = await sql`
-        SELECT pd.id, pd.user_id, pd.nama, pd.no_hp, pd.jabatan, pd.nip, pd.pendidikan_terakhir, pd.foto, pd.foto_fokus, pd.masa_jabatan,
+        SELECT pd.id, pd.user_id, pd.nama, pd.no_hp, pd.jabatan, pd.nip, pd.pendidikan_terakhir, pd.foto, pd.foto_fokus, pd.masa_jabatan, pd.urutan,
                u.nama AS nama_user, u.email AS email_user
         FROM perangkat_desa pd
         LEFT JOIN users u ON pd.user_id = u.id
         WHERE pd.nama ILIKE ${searchPattern} OR pd.jabatan ILIKE ${searchPattern} OR pd.nip ILIKE ${searchPattern}
-        ORDER BY pd.id ASC
+        ORDER BY pd.urutan ASC, pd.id ASC
         LIMIT ${limit} OFFSET ${offset}
       `;
       countResult = await sql`
@@ -30,11 +30,11 @@ export async function GET(request: Request) {
       `;
     } else {
       data = await sql`
-        SELECT pd.id, pd.user_id, pd.nama, pd.no_hp, pd.jabatan, pd.nip, pd.pendidikan_terakhir, pd.foto, pd.foto_fokus, pd.masa_jabatan,
+        SELECT pd.id, pd.user_id, pd.nama, pd.no_hp, pd.jabatan, pd.nip, pd.pendidikan_terakhir, pd.foto, pd.foto_fokus, pd.masa_jabatan, pd.urutan,
                u.nama AS nama_user, u.email AS email_user
         FROM perangkat_desa pd
         LEFT JOIN users u ON pd.user_id = u.id
-        ORDER BY pd.id ASC
+        ORDER BY pd.urutan ASC, pd.id ASC
         LIMIT ${limit} OFFSET ${offset}
       `;
       countResult = await sql`SELECT COUNT(*)::int AS total FROM perangkat_desa`;
@@ -77,9 +77,13 @@ export async function POST(request: Request) {
     }
 
     const result = await sql`
-      INSERT INTO perangkat_desa (user_id, nama, no_hp, jabatan, nip, pendidikan_terakhir, foto, foto_fokus, masa_jabatan)
-      VALUES (${userId}, ${body.nama}, ${noHp}, ${body.jabatan}, ${body.nip || null}, ${body.pendidikan_terakhir || null}, ${body.foto || null}, ${body.foto_fokus || null}, ${body.masa_jabatan || null})
-      RETURNING id, user_id, nama, no_hp, jabatan, nip, pendidikan_terakhir, foto, foto_fokus, masa_jabatan
+      INSERT INTO perangkat_desa (user_id, nama, no_hp, jabatan, nip, pendidikan_terakhir, foto, foto_fokus, masa_jabatan, urutan)
+      VALUES (
+        ${userId}, ${body.nama}, ${noHp}, ${body.jabatan}, ${body.nip || null}, ${body.pendidikan_terakhir || null},
+        ${body.foto || null}, ${body.foto_fokus || null}, ${body.masa_jabatan || null},
+        (SELECT COALESCE(MAX(urutan), 0) + 1 FROM perangkat_desa)
+      )
+      RETURNING id, user_id, nama, no_hp, jabatan, nip, pendidikan_terakhir, foto, foto_fokus, masa_jabatan, urutan
     `;
 
     return NextResponse.json({

@@ -16,6 +16,7 @@ import {
     Phone,
     BadgeCheck,
     Users,
+    ArrowUpDown,
 } from "lucide-react";
 import Toast from "@/components/dashboard/Toast";
 import fetcher from "@/lib/swr-fetcher";
@@ -95,13 +96,22 @@ export default function PerangkatManagementPage() {
                             Data ini tampil di halaman publik Profil Desa. Akun login itu opsional -- tidak semua pejabat perlu bisa masuk ke dashboard.
                         </p>
                     </div>
-                    <Link
-                        href="/dashboard/perangkat/baru"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Tambah Perangkat
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        <Link
+                            href="/dashboard/perangkat/urutan"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl text-sm font-semibold transition-colors shadow-sm"
+                        >
+                            <ArrowUpDown className="w-4 h-4" />
+                            Atur Urutan
+                        </Link>
+                        <Link
+                            href="/dashboard/perangkat/baru"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Tambah Perangkat
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="relative max-w-md">

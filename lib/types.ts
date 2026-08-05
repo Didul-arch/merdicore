@@ -72,6 +72,7 @@ export interface PerangkatDesa {
   foto: string | null;
   foto_fokus: string | null;
   masa_jabatan: string | null;
+  urutan: number;
   // Terisi kalau baris ini dikaitkan ke akun login (opsional).
   nama_user: string | null;
   email_user: string | null;
