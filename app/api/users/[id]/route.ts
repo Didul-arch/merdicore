@@ -52,6 +52,18 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ success: false, message: 'User tidak ditemukan' }, { status: 404 });
     }
 
+    // umkm_ids kalau dikirim (dari form edit user) menggantikan SELURUH
+    // kepemilikan user ini: lepas dulu semua UMKM yang sekarang jadi
+    // miliknya, baru pasang ulang ke id yang dipilih. DB jadi sumber
+    // kebenaran, gak perlu hitung selisih di sisi client.
+    if (Array.isArray(body.umkm_ids)) {
+      const umkmIds = body.umkm_ids.map(Number).filter(Number.isFinite);
+      await sql`UPDATE umkm SET pemilik_id = NULL WHERE pemilik_id = ${userId}`;
+      if (umkmIds.length > 0) {
+        await sql`UPDATE umkm SET pemilik_id = ${userId} WHERE id = ANY(${umkmIds})`;
+      }
+    }
+
     return NextResponse.json({
       success: true,
       message: 'User berhasil diubah',

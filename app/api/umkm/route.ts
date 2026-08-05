@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     if (search) {
       const searchPattern = `%${search}%`;
       umkm = await sql`
-        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.gambar, um.gambar_fokus, um.galeri_foto, um.peta_embed_url, um.created_at,
+        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.pemilik_id, um.gambar, um.gambar_fokus, um.galeri_foto, um.peta_embed_url, um.created_at,
                u.nama AS pemilik_nama
         FROM umkm um
         LEFT JOIN users u ON um.pemilik_id = u.id
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
       `;
     } else {
       umkm = await sql`
-        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.gambar, um.gambar_fokus, um.galeri_foto, um.peta_embed_url, um.created_at,
+        SELECT um.id, um.nama_usaha, um.deskripsi, um.no_whatsapp, um.alamat, um.pemilik_id, um.gambar, um.gambar_fokus, um.galeri_foto, um.peta_embed_url, um.created_at,
                u.nama AS pemilik_nama
         FROM umkm um
         LEFT JOIN users u ON um.pemilik_id = u.id
