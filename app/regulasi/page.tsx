@@ -15,12 +15,11 @@ export default async function RegulasiPage() {
   const regulasi = await getAllRegulasi();
 
   return (
-    <div className="py-24 bg-slate-50 min-h-screen">
+    <div className="pt-32 pb-24 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/50">TRANSPARANSI HUKUM & LAYANAN</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">Produk Hukum & Persyaratan Surat</h2>
-          <p className="text-xs sm:text-sm text-gray-500 font-light leading-relaxed">Menjamin keterbukaan informasi publik. Temukan draf Peraturan Desa (Perdes) resmi, serta syarat dan alur pengurusan surat-menyurat (KTP, KK, pindah, dan lainnya).</p>
+          <p className="text-xs sm:text-sm text-gray-500 font-light leading-relaxed">Menjamin keterbukaan informasi publik. Temukan draf Peraturan Desa (Perdes) resmi, serta syarat dan alur pengurusan surat-menyurat.</p>
           <div className="h-1 w-16 bg-teal-600 rounded mx-auto" />
         </div>
 
