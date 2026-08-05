@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import Toast from "@/components/dashboard/Toast";
@@ -40,6 +40,20 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
   const [file, setFile] = useState<File | null>(null);
   const [galeri, setGaleri] = useState<string[]>(awal.galeri_foto ?? []);
   const [galeriFiles, setGaleriFiles] = useState<File[]>([]);
+
+  // Foto galeri yang baru dipilih (belum diupload) juga langsung dipreview
+  // pakai URL sementara di browser — pola yang sama kayak ImageUploadField:
+  // dibandingkan & dihitung ulang di render (bukan useEffect + setState),
+  // supaya blob URL lama langsung dilepas begitu daftar filenya berubah.
+  const [galeriPreview, setGaleriPreview] = useState<{ files: File[]; urls: string[] }>({ files: [], urls: [] });
+  if (galeriFiles !== galeriPreview.files) {
+    galeriPreview.urls.forEach((u) => URL.revokeObjectURL(u));
+    setGaleriPreview({ files: galeriFiles, urls: galeriFiles.map((f) => URL.createObjectURL(f)) });
+  }
+  const galeriPreviews = galeriPreview.urls;
+
+  // Lepas blob URL yang masih nyantol kalau formnya ditinggal (unmount).
+  useEffect(() => () => { galeriPreview.urls.forEach((u) => URL.revokeObjectURL(u)); }, [galeriPreview.urls]);
 
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -135,16 +149,20 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
           />
         </Field>
 
-        <Field label="Galeri Produk" petunjuk="Bisa pilih beberapa sekaligus. Klik ✕ untuk membuang foto lama.">
+        <Field label="Galeri Produk" petunjuk="Bisa pilih beberapa sekaligus. Klik ✕ untuk membuang foto.">
           <FileInput
             multiple
             accept="image/*"
-            onChange={(e) => setGaleriFiles(e.target.files ? Array.from(e.target.files) : [])}
+            onChange={(e) => {
+              const baru = e.target.files ? Array.from(e.target.files) : [];
+              e.target.value = ""; // biar milih berkas yang sama lagi tetap memicu onChange
+              setGaleriFiles((prev) => [...prev, ...baru]);
+            }}
           />
-          {galeri.length > 0 && (
+          {(galeri.length > 0 || galeriPreviews.length > 0) && (
             <div className="mt-3 grid grid-cols-3 sm:grid-cols-5 gap-3">
               {galeri.map((url, i) => (
-                <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                <div key={`lama-${i}`} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt={`Galeri ${i + 1}`} className="w-full h-full object-cover" />
                   <button
@@ -159,10 +177,22 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
                   </button>
                 </div>
               ))}
+              {galeriPreviews.map((url, i) => (
+                <div key={`baru-${i}`} className="relative aspect-square rounded-lg overflow-hidden border border-teal-200 bg-gray-50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`Foto baru ${i + 1}`} className="w-full h-full object-cover" />
+                  <span className="absolute bottom-1 left-1 bg-teal-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Baru</span>
+                  <button
+                    type="button"
+                    onClick={() => setGaleriFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="absolute top-1 right-1 bg-white rounded-full p-1 text-red-600 border border-gray-200 shadow-sm transition hover:bg-red-50 hover:border-red-200 cursor-pointer"
+                    title="Batalkan foto ini"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             </div>
-          )}
-          {galeriFiles.length > 0 && (
-            <p className="text-[11px] text-teal-600 mt-2">{galeriFiles.length} foto baru siap diunggah.</p>
           )}
         </Field>
       </FormPage>
