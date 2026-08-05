@@ -79,10 +79,10 @@ export async function getRegulasiById(id: number): Promise<RegulasiItem | null> 
 export async function getAllPerangkatDesa(limit = 50): Promise<PerangkatDesa[]> {
   const rows = await sql`
     SELECT pd.id, pd.user_id, pd.nama, pd.no_hp, pd.jabatan, pd.nip, pd.pendidikan_terakhir,
-           pd.foto, pd.foto_fokus, pd.masa_jabatan, u.nama AS nama_user, u.email AS email_user
+           pd.foto, pd.foto_fokus, pd.masa_jabatan, pd.urutan, u.nama AS nama_user, u.email AS email_user
     FROM perangkat_desa pd
     LEFT JOIN users u ON pd.user_id = u.id
-    ORDER BY pd.id ASC
+    ORDER BY pd.urutan ASC, pd.id ASC
     LIMIT ${limit}
   `;
   return rows as unknown as PerangkatDesa[];
