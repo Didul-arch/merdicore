@@ -170,41 +170,71 @@ export default function RichEditor({ isiAwal, onChange, folder, onError }: Props
 
                 <span className="w-px bg-gray-200 mx-1 my-1" />
 
-                {editor.isActive("table") ? (
-                    // Di dalam tabel: satu menu ringkas dengan label teks jelas,
-                    // gantiin 5 tombol berjejer yang kemarin kepanjangan & bikin
-                    // toolbar sesak.
-                    <details ref={menuTabel} className="relative">
-                        <summary
-                            title="Menu tabel"
-                            className="list-none p-1.5 rounded-lg transition cursor-pointer text-teal-700 bg-teal-50 hover:bg-teal-100 [&::-webkit-details-marker]:hidden"
-                        >
-                            <Table2 className="w-4 h-4" />
-                        </summary>
-                        <div className="absolute left-0 top-full mt-1 z-20 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-xs">
-                            <button type="button" onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().addRowAfter().run())} className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer">
-                                Tambah Baris
-                            </button>
-                            <button type="button" onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().deleteRow().run())} className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer">
-                                Hapus Baris Ini
-                            </button>
-                            <button type="button" onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().addColumnAfter().run())} className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer">
-                                Tambah Kolom
-                            </button>
-                            <button type="button" onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().deleteColumn().run())} className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer">
-                                Hapus Kolom Ini
-                            </button>
-                            <div className="my-1 border-t border-gray-100" />
-                            <button type="button" onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().deleteTable().run())} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600 cursor-pointer">
-                                Hapus Tabel
-                            </button>
-                        </div>
-                    </details>
-                ) : (
-                    <TombolBar judul="Sisipkan tabel" onClick={() => sisipTabel(editor)}>
+                {/* Satu tombol tabel tetap, isi menunya yang menyesuaikan: "Sisipkan
+                    Tabel" cuma aktif kalau kursor BELUM di dalam tabel, sisanya
+                    cuma aktif kalau kursor SUDAH di dalam tabel. */}
+                <details ref={menuTabel} className="relative">
+                    <summary
+                        title="Menu tabel"
+                        className={`list-none p-1.5 rounded-lg transition cursor-pointer [&::-webkit-details-marker]:hidden ${
+                            editor.isActive("table") ? "text-teal-700 bg-teal-50 hover:bg-teal-100" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                        }`}
+                    >
                         <Table2 className="w-4 h-4" />
-                    </TombolBar>
-                )}
+                    </summary>
+                    <div className="absolute left-0 top-full mt-1 z-20 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-xs">
+                        <button
+                            type="button"
+                            disabled={editor.isActive("table")}
+                            onClick={() => aksiTabel(editor, sisipTabel)}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        >
+                            Sisipkan Tabel
+                        </button>
+                        <div className="my-1 border-t border-gray-100" />
+                        <button
+                            type="button"
+                            disabled={!editor.isActive("table")}
+                            onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().addRowAfter().run())}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        >
+                            Tambah Baris
+                        </button>
+                        <button
+                            type="button"
+                            disabled={!editor.isActive("table")}
+                            onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().deleteRow().run())}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        >
+                            Hapus Baris Ini
+                        </button>
+                        <button
+                            type="button"
+                            disabled={!editor.isActive("table")}
+                            onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().addColumnAfter().run())}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        >
+                            Tambah Kolom
+                        </button>
+                        <button
+                            type="button"
+                            disabled={!editor.isActive("table")}
+                            onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().deleteColumn().run())}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        >
+                            Hapus Kolom Ini
+                        </button>
+                        <div className="my-1 border-t border-gray-100" />
+                        <button
+                            type="button"
+                            disabled={!editor.isActive("table")}
+                            onClick={() => aksiTabel(editor, (ed) => ed.chain().focus().deleteTable().run())}
+                            className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        >
+                            Hapus Tabel
+                        </button>
+                    </div>
+                </details>
 
                 <span className="flex-1" />
 
