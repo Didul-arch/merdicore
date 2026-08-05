@@ -57,14 +57,18 @@ function nyahEntitas(s: string): string {
 export function ambilSrcMapsEmbed(input: string): string | null {
   const teks = (input || '').trim();
   if (!teks) return null;
-  const cocok = teks.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);
+  // \1 wajib ketemu kutip PENUTUP yang sama dengan kutip pembuka atribut.
+  // Kalau cuma [^"']+ (kutip apa saja), nama tempat yang punya apostrof
+  // ("Ern's Jahit") bikin regex-nya berhenti duluan di situ — URL kepotong
+  // di tengah, bukan di penutup atribut src yang sebenarnya.
+  const cocok = teks.match(/<iframe[^>]*\ssrc=(["'])(.*?)\1/i);
   // Atribut src di HTML yang di-copy dari Google memang berisi "&amp;"
   // apa adanya (bukan "&"), bukan bug typo — itu memang cara "&" ditulis
   // valid di dalam HTML. Kalau gak di-decode balik, karakter "&amp;" itu
   // ikut jadi bagian dari nilai parameter pb=... dan Google nolak URL-nya
   // ("Invalid 'pb' parameter"), soalnya bukan "&" asli yang motong ke
   // parameter berikutnya.
-  const url = nyahEntitas(cocok ? cocok[1] : teks);
+  const url = nyahEntitas(cocok ? cocok[2] : teks);
   try {
     const u = new URL(url);
     const hostOk = u.hostname === 'www.google.com' || u.hostname === 'maps.google.com';
