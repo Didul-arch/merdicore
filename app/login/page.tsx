@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield, Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -29,7 +29,8 @@ export default function LoginPage() {
     if (res?.error) {
       setError(res.error);
     } else {
-      router.push('/dashboard');
+      const session = await getSession();
+      router.push(session?.user?.role === 'pemilik_umkm' ? '/toko' : '/dashboard');
     }
   };
 

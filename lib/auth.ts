@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export const ADMIN_ROLES = ['super_admin', 'perangkat_desa'];
+export const OWNER_ROLE = 'pemilik_umkm';
 
 /** Return the session if its role is in allowedRoles, else null. */
 export async function requireRole(allowedRoles: string[]) {
