@@ -10,11 +10,10 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="py-24 bg-slate-50 min-h-screen">
+    <div className="pt-32 pb-24 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
 
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/50">KONTAK & ASPIRASI WARGA</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">
             Hubungi Kantor Desa & Layanan Aspirasi
           </h2>
@@ -61,22 +60,15 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="bg-slate-900 rounded-3xl p-6 text-white relative overflow-hidden h-56 flex flex-col justify-between shadow-md border border-slate-850">
-              <div className="absolute top-0 right-0 w-44 h-44 bg-teal-500/10 rounded-full blur-2xl" />
-              <div className="space-y-1 relative z-10">
-                <span className="text-[9px] text-teal-400 font-extrabold uppercase tracking-widest">PETA LOKASI KANTOR</span>
-                <h4 className="font-bold text-gray-100 text-sm sm:text-base leading-tight">Desa Pulung Merdiko</h4>
-                <p className="text-[11px] text-gray-300 font-light leading-relaxed">Kecamatan Pulung, Ponorogo, Jawa Timur</p>
-              </div>
-              <div className="h-20 bg-slate-800/80 rounded-2xl p-3 flex items-center justify-between border border-slate-700/50 relative z-10">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-emerald-400 block">✓ Koordinat GPS Presisi</span>
-                  <span className="font-mono text-[9px] text-gray-400">Lat: -7.8643, Lng: 111.6421</span>
-                </div>
-                <a href="https://maps.google.com/?q=Pulung+Ponorogo" target="_blank" rel="noreferrer" className="bg-teal-600 hover:bg-teal-500 text-white text-[10px] font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center space-x-1 flex-shrink-0">
-                  <span>Buka Peta</span>
-                </a>
-              </div>
+            <div className="rounded-3xl overflow-hidden border border-gray-100 shadow-sm h-56">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d19616.56775967318!2d111.6008402!3d-7.8813414!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e79a76e1b735f29%3A0x535c125eec828e68!2sPulung%20Merdiko%2C%20Kec.%20Pulung%2C%20Kabupaten%20Ponorogo%2C%20Jawa%20Timur!5e1!3m2!1sid!2sid!4v1785942416008!5m2!1sid!2sid"
+                title="Peta wilayah Desa Pulung Merdiko"
+                className="w-full h-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
             </div>
           </div>
 
