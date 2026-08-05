@@ -38,6 +38,15 @@ export function generateWhatsAppUrl(phone: string, message: string): string {
   return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
 }
 
+const ENTITAS: Record<string, string> = {
+  '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'",
+};
+
+/** Ubah entitas HTML (&amp; dkk) balik ke karakter aslinya. */
+function nyahEntitas(s: string): string {
+  return s.replace(/&nbsp;|&amp;|&lt;|&gt;|&quot;|&#39;/g, (e) => ENTITAS[e]);
+}
+
 /**
  * Admin nempel potongan HTML <iframe> dari Google Maps (Bagikan → Sematkan
  * peta) atau langsung URL src-nya. Ambil URL-nya saja, dan pastikan memang
@@ -49,7 +58,13 @@ export function ambilSrcMapsEmbed(input: string): string | null {
   const teks = (input || '').trim();
   if (!teks) return null;
   const cocok = teks.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);
-  const url = cocok ? cocok[1] : teks;
+  // Atribut src di HTML yang di-copy dari Google memang berisi "&amp;"
+  // apa adanya (bukan "&"), bukan bug typo — itu memang cara "&" ditulis
+  // valid di dalam HTML. Kalau gak di-decode balik, karakter "&amp;" itu
+  // ikut jadi bagian dari nilai parameter pb=... dan Google nolak URL-nya
+  // ("Invalid 'pb' parameter"), soalnya bukan "&" asli yang motong ke
+  // parameter berikutnya.
+  const url = nyahEntitas(cocok ? cocok[1] : teks);
   try {
     const u = new URL(url);
     const hostOk = u.hostname === 'www.google.com' || u.hostname === 'maps.google.com';
@@ -66,15 +81,9 @@ export function ambilSrcMapsEmbed(input: string): string | null {
    itu akan terseret ke bundle browser. lib/utils.ts sudah terbukti aman
    dipakai client component. */
 
-const ENTITAS: Record<string, string> = {
-  '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'",
-};
-
 /** Buang tag HTML, sisakan teksnya saja. Dipakai ringkasan kartu & pencarian. */
 export function teksPolos(html: string | null): string {
-  return (html || '')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;|&amp;|&lt;|&gt;|&quot;|&#39;/g, (e) => ENTITAS[e])
+  return nyahEntitas((html || '').replace(/<[^>]*>/g, ' '))
     .replace(/\s+/g, ' ')
     .trim();
 }
