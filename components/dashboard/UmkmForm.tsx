@@ -26,7 +26,16 @@ const KOSONG: UmkmAwal = {
   peta_embed_url: null,
 };
 
-export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
+interface Props {
+  awal?: UmkmAwal;
+  /** Ke mana tombol "kembali"/"batal" dan redirect abis simpan mengarah. */
+  kembaliKe?: string;
+  /** Sembunyikan field embed peta — dipakai di portal pemilik UMKM (/toko)
+   *  biar gak ada yang harus tempel kode HTML, cukup admin desa yang atur. */
+  sembunyikanPeta?: boolean;
+}
+
+export default function UmkmForm({ awal = KOSONG, kembaliKe = "/dashboard/umkm", sembunyikanPeta = false }: Props) {
   const router = useRouter();
   const mode = awal.id ? "edit" : "create";
 
@@ -90,7 +99,7 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || "Gagal menyimpan UMKM");
 
-      router.push("/dashboard/umkm");
+      router.push(kembaliKe);
       router.refresh();
     } catch (err) {
       setToast({ message: err instanceof Error ? err.message : "Terjadi kesalahan", type: "error" });
@@ -105,7 +114,7 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
       <FormPage
         judul={mode === "create" ? "Tambah UMKM" : "Edit UMKM"}
         keterangan={mode === "create" ? "Daftarkan usaha warga ke etalase desa." : awal.nama_usaha}
-        kembaliKe="/dashboard/umkm"
+        kembaliKe={kembaliKe}
         onSubmit={handleSubmit}
         submitting={submitting}
         labelSimpan={mode === "create" ? "Simpan UMKM" : "Perbarui UMKM"}
@@ -127,17 +136,19 @@ export default function UmkmForm({ awal = KOSONG }: { awal?: UmkmAwal }) {
           </Field>
         </div>
 
-        <Field
-          label="Lokasi di Google Maps"
-          petunjuk='Buka lokasi usaha di Google Maps → tombol "Bagikan" → tab "Sematkan peta" → salin HTML-nya, tempel di sini. Boleh juga cuma tempel link src-nya saja.'
-        >
-          <TextArea
-            rows={3}
-            value={petaEmbedUrl}
-            onChange={(e) => setPetaEmbedUrl(e.target.value)}
-            placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." ...></iframe>'
-          />
-        </Field>
+        {!sembunyikanPeta && (
+          <Field
+            label="Lokasi di Google Maps"
+            petunjuk='Buka lokasi usaha di Google Maps → tombol "Bagikan" → tab "Sematkan peta" → salin HTML-nya, tempel di sini. Boleh juga cuma tempel link src-nya saja.'
+          >
+            <TextArea
+              rows={3}
+              value={petaEmbedUrl}
+              onChange={(e) => setPetaEmbedUrl(e.target.value)}
+              placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." ...></iframe>'
+            />
+          </Field>
+        )}
 
         <Field label="Gambar Utama" petunjuk="Otomatis diperkecil dan dikompres saat diunggah.">
           <ImageUploadField

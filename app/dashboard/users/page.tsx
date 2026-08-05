@@ -144,7 +144,11 @@ export default function UsersManagementPage() {
                 const res = await fetch(`/api/users/${editingUser.id}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nama: fNama, no_hp: fNoHp, role: fRole, password: fPassword, umkm_ids: fUmkmIds }),
+                    body: JSON.stringify({
+                        nama: fNama, no_hp: fNoHp, role: fRole, password: fPassword,
+                        // Role selain pemilik_umkm gak boleh nyangkut kepemilikan UMKM.
+                        umkm_ids: fRole === "pemilik_umkm" ? fUmkmIds : [],
+                    }),
                 });
                 const json = await res.json();
                 if (!res.ok) throw new Error(json.message || "Gagal mengubah user");
@@ -388,7 +392,7 @@ export default function UsersManagementPage() {
                                 </p>
                             </div>
 
-                            {formMode === "edit" && (
+                            {formMode === "edit" && fRole === "pemilik_umkm" && (
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-700 mb-1">UMKM yang Dimiliki</label>
                                     <div className="border border-gray-200 rounded-xl max-h-40 overflow-y-auto divide-y divide-gray-100">

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db';
-import { requireRole, ADMIN_ROLES } from '@/lib/auth';
+import { requireRole, ADMIN_ROLES, OWNER_ROLE } from '@/lib/auth';
 import { hapusGambar, hapusGambarYangDilepas, kumpulkanGambar } from '@/lib/storage';
 import { ambilSrcMapsEmbed } from '@/lib/utils';
 
@@ -38,7 +38,10 @@ export async function GET(request: Request, context: RouteContext) {
 
 export async function PUT(request: Request, context: RouteContext) {
   try {
-    const session = await requireRole(ADMIN_ROLES);
+    // Admin desa boleh ubah UMKM siapa saja; pemilik_umkm cuma boleh ubah
+    // usahanya sendiri — dicek di bawah pakai pemilik_id baris yang dituju,
+    // BUKAN dipercaya dari body request.
+    const session = await requireRole([...ADMIN_ROLES, OWNER_ROLE]);
     if (!session) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
@@ -51,12 +54,18 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ success: false, message: 'Nama usaha wajib diisi' }, { status: 400 });
     }
 
+    const sebelum = await sql`SELECT gambar, galeri_foto, pemilik_id FROM umkm WHERE id = ${umkmId}`;
+    if (sebelum.length === 0) {
+      return NextResponse.json({ success: false, message: 'UMKM tidak ditemukan' }, { status: 404 });
+    }
+    if (session.user.role === OWNER_ROLE && sebelum[0].pemilik_id !== Number(session.user.id)) {
+      return NextResponse.json({ success: false, message: 'Bukan usaha Anda' }, { status: 403 });
+    }
+
     const petaEmbedUrl = body.peta_embed_url ? ambilSrcMapsEmbed(body.peta_embed_url) : null;
     if (body.peta_embed_url && !petaEmbedUrl) {
       return NextResponse.json({ success: false, message: 'Link/kode sematan Google Maps tidak valid' }, { status: 400 });
     }
-
-    const sebelum = await sql`SELECT gambar, galeri_foto FROM umkm WHERE id = ${umkmId}`;
 
     const result = await sql`
       UPDATE umkm

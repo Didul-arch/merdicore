@@ -30,7 +30,7 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (pathname?.startsWith('/dashboard')) {
+  if (pathname?.startsWith('/dashboard') || pathname?.startsWith('/toko')) {
     return null;
   }
 

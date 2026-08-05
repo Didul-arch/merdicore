@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-import { ADMIN_ROLES } from "@/lib/auth";
+import { ADMIN_ROLES, OWNER_ROLE } from "@/lib/auth";
 import { ReactNode } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 
@@ -11,6 +11,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         redirect("/login");
     }
     const userRole = session.user.role;
+    if (userRole === OWNER_ROLE) {
+        redirect("/toko");
+    }
     if (!userRole || !ADMIN_ROLES.includes(userRole)) {
         redirect("/");
     }
