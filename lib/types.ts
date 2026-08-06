@@ -59,6 +59,22 @@ export interface RegulasiItem {
   created_at: string;
 }
 
+// === Pengaturan Desa (singleton — 1 baris, id selalu 1) ===
+
+export interface PengaturanDesa {
+  id: number;
+  sejarah: string | null;
+  visi: string | null;
+  misi: string[];
+  alamat_kantor: string | null;
+  jam_pelayanan: string | null;
+  jam_pelayanan_catatan: string | null;
+  telepon: string | null;
+  email: string | null;
+  peta_embed_url: string | null;
+  updated_at: string;
+}
+
 // === Perangkat Desa ===
 
 export interface PerangkatDesa {

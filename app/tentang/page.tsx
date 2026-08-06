@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from 'next/image';
 import { Eye, BookOpen, Landmark, Users } from 'lucide-react';
-import { getAllPerangkatDesa } from '@/lib/fetchers';
+import { getAllPerangkatDesa, getPengaturanDesa } from '@/lib/fetchers';
+import { keHtml } from '@/lib/utils';
 import OfficialCard from '@/components/tentang/OfficialCard';
 import fotoMakamProfil from '@/app/makam-profil.jpg';
 
@@ -14,15 +15,11 @@ export const metadata: Metadata = {
 // Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
 export const revalidate = 60;
 
-const MISSIONS = [
-  'Meningkatkan profesionalisme aparatur pemerintah desa demi mewujudkan pelayanan yang prima, bersih, dan berwibawa.',
-  'Membangun infrastruktur desa yang merata, berkualitas tinggi, serta berwawasan lingkungan secara berkesinambungan.',
-  'Memberdayakan ekonomi kerakyatan melalui pendampingan intensif bagi UMKM lokal, modernisasi pertanian, dan perluasan pasar digital.',
-  'Melestarikan warisan adat istiadat, kebudayaan daerah Ponorogo, serta membina kerukunan beragama secara berkeadilan.',
-];
-
 export default async function TentangPage() {
-  const officials = await getAllPerangkatDesa(50);
+  const [officials, pengaturan] = await Promise.all([
+    getAllPerangkatDesa(50),
+    getPengaturanDesa(),
+  ]);
 
   return (
     <div className="pt-32 pb-24 bg-slate-50 min-h-screen">
@@ -59,15 +56,10 @@ export default async function TentangPage() {
             </div>
             <div className="h-0.5 w-16 bg-teal-600 rounded" />
 
-            <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
-              Nama <strong>&quot;Pulung Merdiko&quot;</strong> memiliki akar filosofis yang mendalam. Menurut kisah turun-temurun dari para tetua desa, kata <em>&quot;Pulung&quot;</em> merujuk pada wahyu, keberuntungan, atau pancaran cahaya spiritual positif yang turun di wilayah ini. Sedangkan kata <em>&quot;Merdiko&quot;</em> berarti merdeka, bebas, dan berdaulat.
-            </p>
-            <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
-              Sejarah bermula pada pertengahan abad ke-19, saat wilayah ini berupa hutan belantara yang lebat. Sekelompok prajurit pengikut setia Pangeran Diponegoro yang mengembara ke arah timur Ponorogo membuka lahan baru. Dipimpin oleh <strong>Eyang Raden Tumenggung Djayengrono</strong>, mereka menetap dan mendirikan pemukiman yang mandiri bebas dari penjajahan Belanda.
-            </p>
-            <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
-              Hingga hari ini, semangat kemandirian dan rasa kegotongroyongan kian mengakar kuat, menempatkan Desa Pulung Merdiko sebagai desa pelopor kedamaian, harmoni budaya, serta ketangguhan ekonomi kreatif di Kabupaten Ponorogo.
-            </p>
+            <div
+              className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed space-y-4"
+              dangerouslySetInnerHTML={{ __html: keHtml(pengaturan.sejarah) }}
+            />
           </div>
         </div>
 
@@ -84,7 +76,7 @@ export default async function TentangPage() {
               <div className="h-0.5 w-12 bg-teal-600 rounded" />
 
               <blockquote className="border-l-4 border-teal-600 pl-4 py-2 text-sm sm:text-base italic text-gray-800 font-medium leading-relaxed bg-slate-50 rounded-r-xl pr-4">
-                &quot;Mewujudkan Desa Pulung Merdiko sebagai desa yang mandiri, sejahtera, rukun, dan berbudaya melalui tata kelola pemerintahan yang bersih, transparan, dan responsif berbasis teknologi informasi.&quot;
+                &quot;{pengaturan.visi}&quot;
               </blockquote>
             </div>
 
@@ -115,7 +107,7 @@ export default async function TentangPage() {
             <div className="h-0.5 w-12 bg-teal-600 rounded" />
 
             <ul className="space-y-4">
-              {MISSIONS.map((mission, idx) => (
+              {pengaturan.misi.map((mission, idx) => (
                 <li key={idx} className="flex items-start space-x-3">
                   <span className="w-6 h-6 flex-shrink-0 bg-teal-50 text-teal-700 border border-teal-200/50 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
                     {idx + 1}

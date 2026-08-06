@@ -2,7 +2,7 @@
 // JANGAN import file ini di Client Component: kodenya bakal ikut terkirim
 // ke browser bareng kredensial database.
 import sql from '@/lib/db';
-import type { BeritaItem, UmkmItem, LembagaItem, PerangkatDesa, RegulasiItem } from '@/lib/types';
+import type { BeritaItem, UmkmItem, LembagaItem, PerangkatDesa, RegulasiItem, PengaturanDesa } from '@/lib/types';
 
 export async function getLatestBerita(limit = 10): Promise<BeritaItem[]> {
   const rows = await sql`
@@ -74,6 +74,11 @@ export async function getAllRegulasi(limit = 100): Promise<RegulasiItem[]> {
 export async function getRegulasiById(id: number): Promise<RegulasiItem | null> {
   const rows = await sql`SELECT * FROM regulasi WHERE id = ${id}`;
   return (rows[0] as RegulasiItem) ?? null;
+}
+
+export async function getPengaturanDesa(): Promise<PengaturanDesa> {
+  const rows = await sql`SELECT * FROM pengaturan_desa WHERE id = 1`;
+  return rows[0] as unknown as PengaturanDesa;
 }
 
 export async function getAllPerangkatDesa(limit = 50): Promise<PerangkatDesa[]> {
