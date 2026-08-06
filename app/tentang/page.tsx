@@ -66,6 +66,9 @@ export default async function TentangPage() {
               Sejarah bermula pada pertengahan abad ke-19, saat wilayah ini berupa hutan belantara yang lebat. Sekelompok prajurit pengikut setia Pangeran Diponegoro yang mengembara ke arah timur Ponorogo membuka lahan baru. Dipimpin oleh <strong>Eyang Raden Tumenggung Djayengrono</strong>, mereka menetap dan mendirikan pemukiman yang mandiri bebas dari penjajahan Belanda.
             </p>
             <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
+              Secara administratif, Desa Pulung Merdiko terbagi menjadi dua dusun, yaitu <strong>Dusun Krajan</strong> dan <strong>Dusun Segropyak</strong>.
+            </p>
+            <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
               Hingga hari ini, semangat kemandirian dan rasa kegotongroyongan kian mengakar kuat, menempatkan Desa Pulung Merdiko sebagai desa pelopor kedamaian, harmoni budaya, serta ketangguhan ekonomi kreatif di Kabupaten Ponorogo.
             </p>
           </div>
