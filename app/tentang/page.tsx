@@ -25,11 +25,10 @@ export default async function TentangPage() {
   const officials = await getAllPerangkatDesa(50);
 
   return (
-    <div className="py-24 bg-slate-50 min-h-screen">
+    <div className="pt-32 pb-24 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
 
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1 rounded-full border border-teal-200/50">PROFIL DESA</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-950 tracking-tight">
             Mengenal Lebih Dekat Pulung Merdiko
           </h2>
@@ -46,7 +45,7 @@ export default async function TentangPage() {
             <div className="relative w-full h-80 rounded-2xl overflow-hidden shadow-md border border-gray-150">
               <Image
                 src={fotoMakamProfil}
-                alt="Makam Eyang Raden Tumenggung Djajengrana, cagar budaya Desa Pulung Merdiko"
+                alt="Makam Eyang Raden Tumenggung Djayengrono, cagar budaya Desa Pulung Merdiko"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 className="object-cover object-top"
@@ -64,7 +63,7 @@ export default async function TentangPage() {
               Nama <strong>&quot;Pulung Merdiko&quot;</strong> memiliki akar filosofis yang mendalam. Menurut kisah turun-temurun dari para tetua desa, kata <em>&quot;Pulung&quot;</em> merujuk pada wahyu, keberuntungan, atau pancaran cahaya spiritual positif yang turun di wilayah ini. Sedangkan kata <em>&quot;Merdiko&quot;</em> berarti merdeka, bebas, dan berdaulat.
             </p>
             <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
-              Sejarah bermula pada pertengahan abad ke-19, saat wilayah ini berupa hutan belantara yang lebat. Sekelompok prajurit pengikut setia Pangeran Diponegoro yang mengembara ke arah timur Ponorogo membuka lahan baru. Dipimpin oleh <strong>Eyang Raden Tumenggung Djajengrana</strong>, mereka menetap dan mendirikan pemukiman yang mandiri bebas dari penjajahan Belanda.
+              Sejarah bermula pada pertengahan abad ke-19, saat wilayah ini berupa hutan belantara yang lebat. Sekelompok prajurit pengikut setia Pangeran Diponegoro yang mengembara ke arah timur Ponorogo membuka lahan baru. Dipimpin oleh <strong>Eyang Raden Tumenggung Djayengrono</strong>, mereka menetap dan mendirikan pemukiman yang mandiri bebas dari penjajahan Belanda.
             </p>
             <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed">
               Hingga hari ini, semangat kemandirian dan rasa kegotongroyongan kian mengakar kuat, menempatkan Desa Pulung Merdiko sebagai desa pelopor kedamaian, harmoni budaya, serta ketangguhan ekonomi kreatif di Kabupaten Ponorogo.

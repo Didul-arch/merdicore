@@ -40,10 +40,6 @@ export default function OfficialCard({ official }: Props) {
           <p className="text-[10px] text-gray-400 font-medium">NIP: {official.nip}</p>
         )}
       </div>
-
-      <div className="w-full pt-3 border-t border-gray-50 text-[11px] text-gray-400 font-light">
-        <span>Sedia melayani kebutuhan administratif warga desa.</span>
-      </div>
     </div>
   );
 }

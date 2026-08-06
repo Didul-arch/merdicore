@@ -1,9 +1,10 @@
 "use client";
 
 import { Mail, Phone, Clock, Share2 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import VillageLogo from './VillageLogo';
+import logoDesa from '@/app/icon.png';
 
 const NAV_LINKS = [
   { label: 'Beranda', path: '/' },
@@ -49,7 +50,7 @@ export default function Footer() {
               className="flex items-center space-x-3 cursor-pointer"
             >
               <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center p-0.5">
-                <VillageLogo size={32} />
+                <Image src={logoDesa} alt="Logo Pemerintah Desa Pulung Merdiko" width={32} height={32} className="object-contain" />
               </div>
               <div>
                 <h4 className="text-xs sm:text-sm font-bold text-white tracking-wider leading-tight">
@@ -111,7 +112,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center space-x-3.5">
                 <Clock className="w-4 h-4 text-teal-400 flex-shrink-0" />
-                <span>Sen - Jum: 08:00 - 15:30</span>
+                <span>Sen - Jum: 08:00 - 15:00</span>
               </li>
             </ul>
           </div>
@@ -120,8 +121,10 @@ export default function Footer() {
 
       {/* Copyright */}
       <div className="bg-slate-950 py-6 border-t border-slate-900 text-xs text-gray-500 font-light">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left">
+        <div className="flex gap-2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left">
           <p>© {currentYear} Pemerintah Desa Pulung Merdiko. All rights reserved.</p>
+          <span>|</span>
+          <span>Developed by TEAM KKNT IPB 2026</span>
         </div>
       </div>
     </footer>
