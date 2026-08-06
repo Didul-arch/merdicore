@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 import AspirasiForm from '@/components/contact/AspirasiForm';
+import { getPengaturanDesa } from '@/lib/fetchers';
 
 export const metadata: Metadata = {
   title: "Kontak & Aspirasi",
@@ -8,7 +9,11 @@ export const metadata: Metadata = {
   openGraph: { title: "Kontak & Aspirasi", description: "Alamat kantor, jam pelayanan, dan formulir aspirasi warga Desa Pulung Merdiko." },
 };
 
-export default function ContactPage() {
+// Regenerate halaman maks tiap 60 detik (ISR) — biar update dari dashboard keliatan
+export const revalidate = 60;
+
+export default async function ContactPage() {
+  const pengaturan = await getPengaturanDesa();
   return (
     <div className="pt-32 pb-24 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
@@ -33,43 +38,45 @@ export default function ContactPage() {
                   <div className="p-2.5 bg-teal-50 text-teal-700 rounded-xl mt-0.5 flex-shrink-0"><MapPin className="w-5 h-5" /></div>
                   <div>
                     <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Alamat Kantor Desa:</span>
-                    <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed mt-0.5">Jl. Raya Pulung No. 45, Desa Pulung Merdiko, Kecamatan Pulung, Kabupaten Ponorogo, Jawa Timur 63481</p>
+                    <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed mt-0.5">{pengaturan.alamat_kantor}</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3.5">
                   <div className="p-2.5 bg-teal-50 text-teal-700 rounded-xl mt-0.5 flex-shrink-0"><Clock className="w-5 h-5" /></div>
                   <div>
                     <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Jam Pelayanan Kantor:</span>
-                    <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed mt-0.5">Senin - Jumat: 08:00 - 15:00 WIB<br /><span className="text-teal-600 italic font-semibold">* Sabtu, Minggu, & Libur Nasional: Tutup</span></p>
+                    <p className="text-xs sm:text-sm text-gray-600 font-light leading-relaxed mt-0.5">{pengaturan.jam_pelayanan}<br /><span className="text-teal-600 italic font-semibold">{pengaturan.jam_pelayanan_catatan}</span></p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3.5">
                   <div className="p-2.5 bg-teal-50 text-teal-700 rounded-xl mt-0.5 flex-shrink-0"><Phone className="w-5 h-5" /></div>
                   <div>
                     <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Telepon / WhatsApp Layanan:</span>
-                    <p className="text-xs sm:text-sm text-gray-600 font-light mt-0.5">+62 812-3456-7890 (Sekretariat Desa)</p>
+                    <p className="text-xs sm:text-sm text-gray-600 font-light mt-0.5">{pengaturan.telepon}</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3.5">
                   <div className="p-2.5 bg-teal-50 text-teal-700 rounded-xl mt-0.5 flex-shrink-0"><Mail className="w-5 h-5" /></div>
                   <div>
                     <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Alamat Email Resmi:</span>
-                    <p className="text-xs sm:text-sm text-gray-600 font-light mt-0.5">pemdes@pulungmerdiko.desa.id</p>
+                    <p className="text-xs sm:text-sm text-gray-600 font-light mt-0.5">{pengaturan.email}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-3xl overflow-hidden border border-gray-100 shadow-sm h-56">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d19616.56775967318!2d111.6008402!3d-7.8813414!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e79a76e1b735f29%3A0x535c125eec828e68!2sPulung%20Merdiko%2C%20Kec.%20Pulung%2C%20Kabupaten%20Ponorogo%2C%20Jawa%20Timur!5e1!3m2!1sid!2sid!4v1785942416008!5m2!1sid!2sid"
-                title="Peta wilayah Desa Pulung Merdiko"
-                className="w-full h-full border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                allowFullScreen
-              />
-            </div>
+            {pengaturan.peta_embed_url && (
+              <div className="rounded-3xl overflow-hidden border border-gray-100 shadow-sm h-56">
+                <iframe
+                  src={pengaturan.peta_embed_url}
+                  title="Peta wilayah Desa Pulung Merdiko"
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              </div>
+            )}
           </div>
 
           <AspirasiForm />

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight, Eye, Calendar, BookOpen, ShoppingBag, ArrowRight } from 'lucide-react';
-import { getLatestBerita, getAllUmkm } from '@/lib/fetchers';
+import { getLatestBerita, getAllUmkm, getPengaturanDesa } from '@/lib/fetchers';
 import { formatDate, teksPolos } from '@/lib/utils';
 import HeroAnimated from '@/components/home/HeroAnimated';
 import fotoMakam from '@/app/makam.jpg';
@@ -10,9 +10,10 @@ import fotoMakam from '@/app/makam.jpg';
 export const revalidate = 60;
 
 export default async function Page() {
-  const [latestNews, featuredProducts] = await Promise.all([
+  const [latestNews, featuredProducts, pengaturan] = await Promise.all([
     getLatestBerita(3),
     getAllUmkm(3),
+    getPengaturanDesa(),
   ]);
 
   return (
@@ -54,13 +55,13 @@ export default async function Page() {
                 <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-150/60 flex-1">
                   <h5 className="font-bold text-gray-800 text-xs sm:text-sm mb-1">Visi Utama</h5>
                   <p className="text-xs text-gray-500 font-light">
-                    Mewujudkan Desa Pulung Merdiko yang mandiri, sejahtera, rukun, dan berbudaya berbasis pelayanan prima.
+                    {pengaturan.visi}
                   </p>
                 </div>
                 <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-150/60 flex-1">
                   <h5 className="font-bold text-gray-800 text-xs sm:text-sm mb-1">Sejarah Singkat</h5>
                   <p className="text-xs text-gray-500 font-light">
-                    Didirikan oleh para pejuang pengikut Pangeran Diponegoro yang dipimpin Eyang Djayengrono sebagai wilayah merdeka (Merdiko).
+                    {teksPolos(pengaturan.sejarah).substring(0, 140)}...
                   </p>
                 </div>
               </div>
@@ -233,7 +234,7 @@ export default async function Page() {
             <div className="space-y-4 relative z-10 text-center lg:text-left max-w-2xl">
               <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Kunjungi Kantor Kami</h3>
               <p className="text-xs sm:text-sm text-gray-300 font-light leading-relaxed">
-                Butuh bantuan layanan administrasi kependudukan? Kantor Desa Pulung Merdiko siap melayani warga setiap Senin - Jumat jam 08.00 - 15.00 WIB. Temukan detail arah lokasi kantor desa kami.
+                Butuh bantuan layanan administrasi kependudukan? Kantor Desa Pulung Merdiko siap melayani warga setiap {pengaturan.jam_pelayanan}. Temukan detail arah lokasi kantor desa kami.
               </p>
             </div>
 
